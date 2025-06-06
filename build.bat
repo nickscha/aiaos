@@ -1,6 +1,6 @@
 @echo OFF
 
-REM set DEF_COMPILER_FLAGS=-O2 -s -std=c89 -ffreestanding -m64 -mno-red-zone -fno-builtin -nostdinc -Wall -Wextra -Werror
+REM CFLAGS with strict warnings and pedantic mode
 set DEF_COMPILER_FLAGS=-O2 -s -m64 -mno-red-zone -pedantic -std=c89 -nodefaultlibs -nostdlib -nostdinc ^
 -ffreestanding -fno-builtin -fno-exceptions -fno-asynchronous-unwind-tables ^
 -Wall -Wextra -Werror -Wvla -Wconversion -Wdouble-promotion -Wsign-conversion -Wuninitialized -Winit-self ^
