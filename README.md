@@ -15,10 +15,10 @@ In this section we will build an **x86_64-elf** cross compiler based on GCC usin
 Download and Install the MSYS2 package: 
 https://www.msys2.org/wiki/MSYS2-installation/
  
-Once you have it setup install nasm (needed for assembly files) and gcc:
+Once you have it setup install nasm (needed for assembly files), gcc and other libraries needed for gcc cross compilation:
  
 ```bat
-pacman -S make nasm gcc
+pacman -S base-devel make nasm gcc mingw-w64-x86_64-gcc mingw-w64-x86_64-qemu git gmp-devel mpfr-devel mpc-devel mpc isl-devel zlib-devel
 ```
 
 Verify in the MSYS2 shell that they are installed:
