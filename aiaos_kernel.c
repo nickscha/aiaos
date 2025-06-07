@@ -16,7 +16,7 @@ LICENSE
 void _start_kernel(void)
 {
     volatile char *vga_buf = (char *)0xb8000;
-    const char msg[] = "Hello from C89";
+    const char msg[] = "Hello from C89!";
     int i;
 
     for (i = 0; i < VGA_COLUMNS_NUM * VGA_ROWS_NUM * 2; ++i)
@@ -27,7 +27,7 @@ void _start_kernel(void)
     for (i = 0; i < ARRAY_SIZE(msg) - 1; ++i)
     {
         vga_buf[i * 2] = msg[i];
-        vga_buf[i * 2 + 1] = 0x07; /* White on black */
+        vga_buf[i * 2 + 1] = 0x02; /* White on black */
     }
 }
 
