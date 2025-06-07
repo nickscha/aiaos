@@ -15,6 +15,10 @@ The name **AIAOS** is a simplification and stands for "Application is an Operati
 
 On **Windows** just run the "**build.bat**" file which compiles and links the bootloader and kernel and creates an elf bootable image.
 
+<p align="center">
+<a href="https://nickscha.github.io/"><img src="aiaos_example.png"></a>
+</p>
+
 ## Building Windows cross compilation setup
 
 In this section we will build an **x86_64-elf** cross compiler based on GCC using the **MSYS2** subsystem.
