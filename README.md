@@ -6,7 +6,7 @@
 
 A C89 nostdlib bare metal 64bit operating system.
 
-The name **AIAOS** is a simplication and stands for "Application is an Operating System".
+The name **AIAOS** is a simplification and stands for "Application is an Operating System".
  
 > [!WARNING]
 > THIS PROJECT IS A WORK IN PROGRESS! ANYTHING CAN CHANGE AT ANY MOMENT WITHOUT ANY NOTICE! USE THIS PROJECT AT YOUR OWN RISK!
