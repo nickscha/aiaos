@@ -19,15 +19,16 @@ void _start_kernel(void)
     const char msg[] = "Hello from C89";
     int i;
 
-    for (i = 0; i < VGA_COLUMNS_NUM * VGA_ROWS_NUM * 2; i++)
+    for (i = 0; i < VGA_COLUMNS_NUM * VGA_ROWS_NUM * 2; ++i)
+    {
         vga_buf[i] = '\0';
+    }
 
-    for (i = 0; i < ARRAY_SIZE(msg) - 1; i++)
+    for (i = 0; i < ARRAY_SIZE(msg) - 1; ++i)
     {
         vga_buf[i * 2] = msg[i];
         vga_buf[i * 2 + 1] = 0x07; /* White on black */
     }
-
 }
 
 /*
