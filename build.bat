@@ -1,8 +1,8 @@
 @echo OFF
 
 REM CFLAGS with strict warnings and pedantic mode
-set DEF_COMPILER_FLAGS=-O2 -s -m64 -mno-red-zone -mno-sse -mno-sse2 -mno-sse4.2 -pedantic -std=c89 -nodefaultlibs -nostdlib -nostdinc ^
--ffreestanding -fno-builtin -fno-exceptions -fno-asynchronous-unwind-tables -fno-tree-vectorize ^
+set DEF_COMPILER_FLAGS=-O2 -s -m64 -mno-red-zone -pedantic -std=c89 -nodefaultlibs -nostdlib -nostdinc ^
+-ffreestanding -fno-builtin -fno-exceptions -fno-asynchronous-unwind-tables ^
 -Wall -Wextra -Werror -Wvla -Wconversion -Wdouble-promotion -Wsign-conversion -Wuninitialized -Winit-self ^
 -Wunused -Wunused-function -Wunused-macros -Wunused-parameter -Wunused-value -Wunused-variable -Wunused-local-typedefs
 
