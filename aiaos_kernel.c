@@ -10,25 +10,55 @@ LICENSE
 */
 #define VGA_COLUMNS_NUM 80
 #define VGA_ROWS_NUM 25
+#define VGA_MEMORY (volatile char *)0xB8000
 
-#define ARRAY_SIZE(arr) ((int)sizeof(arr) / (int)sizeof((arr)[0]))
-
-void _start_kernel(void)
+void vga_clear_screen(void)
 {
-    volatile char *vga_buf = (char *)0xb8000;
-    const char msg[] = "Hello from C89!";
     int i;
+    volatile char *vga_buffer = VGA_MEMORY;
 
     for (i = 0; i < VGA_COLUMNS_NUM * VGA_ROWS_NUM * 2; ++i)
     {
-        vga_buf[i] = '\0';
+        vga_buffer[i] = '\0';
     }
+}
 
-    for (i = 0; i < ARRAY_SIZE(msg) - 1; ++i)
+void vga_write_string(const char *str, int row_offset, int col_offset, char color)
+{
+    volatile char *vga_buffer = VGA_MEMORY;
+    int offset = (row_offset * VGA_COLUMNS_NUM + col_offset) * 2;
+    int i = 0;
+
+    while (str[i] != '\0' && (row_offset * VGA_COLUMNS_NUM + col_offset + i) < (VGA_COLUMNS_NUM * VGA_ROWS_NUM))
     {
-        vga_buf[i * 2] = msg[i];
-        vga_buf[i * 2 + 1] = 0x02; /* White on black */
+        vga_buffer[offset + i * 2] = str[i];
+        vga_buffer[offset + i * 2 + 1] = color;
+        i++;
     }
+}
+
+void _start_kernel(void)
+{
+    int aiaos_logo_length = 23;
+    int aiaos_logo_col_offset = (VGA_COLUMNS_NUM - aiaos_logo_length) / 2;
+    int aiaos_logo_row_offset = 1;
+    int aiaos_logo_long_col_offset = (VGA_COLUMNS_NUM - 34) / 2;
+
+    vga_clear_screen();
+
+    /* Logo and Header Text */
+    vga_write_string("   _   _   _   _   _", aiaos_logo_row_offset++, aiaos_logo_col_offset, 0x02);
+    vga_write_string("  / \\ / \\ / \\ / \\ / \\", aiaos_logo_row_offset++, aiaos_logo_col_offset, 0x02);
+    vga_write_string(" ( A | I | A | O | S )", aiaos_logo_row_offset++, aiaos_logo_col_offset, 0x02);
+    vga_write_string("  \\_/ \\_/ \\_/ \\_/ \\_/", aiaos_logo_row_offset++, aiaos_logo_col_offset, 0x02);
+    vga_write_string("Application is an operating system", aiaos_logo_row_offset += 2, aiaos_logo_long_col_offset, 0x02);
+
+    /* Information */
+    vga_write_string("> Version: 0.1", 12, 0, 0x02);
+    vga_write_string("> Hello from 64bit AIAOS with C89 Kernel", 13, 0, 0x02);
+
+    /* Footer */
+    vga_write_string("https://github.com/nickscha/aiaos", 23, aiaos_logo_long_col_offset, 0x02);
 }
 
 /*
