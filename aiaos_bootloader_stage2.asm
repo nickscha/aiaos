@@ -52,16 +52,6 @@ start_prot_mode:
     mov fs, ax
     mov gs, ax
 
-    ;; ————————————————————————————————————————————
-    ;; Enable SSE/XMM support now in protected mode:
-    mov    eax, cr0
-    and    eax, ~(1 << 2)    ; clear EM  → allow x87/SSE instructions
-    mov    cr0, eax
-    mov    eax, cr4
-    or     eax, 1 << 9       ; set OSFXSR → enable FXSAVE/FXRSTOR & XMM ops
-    mov    cr4, eax
-    ;; ————————————————————————————————————————————
-
     mov ebx, prot_mode_msg
     call print_string32
 
@@ -175,6 +165,14 @@ build_page_table_set_entry:
 start_long_mode:
     mov ebx, long_mode_msg
     call print_string64
+
+    ;; (2) Enable SSE/XMM support
+    mov   rax, cr0
+    and   rax, ~(1<<2)     ; clear EM
+    mov   cr0, rax
+    mov   rax, cr4
+    or    rax, 1<<9        ; set OSFXSR
+    mov   cr4, rax
 
     ;; (3) Carve out a safe stack in identity‑mapped RAM
     ;;     Pick an address below your 2 MiB identity map,
