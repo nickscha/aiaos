@@ -23,12 +23,22 @@ void aiaos_kernel_memory_initialize(void)
         aiaos_kernel_memory_e820_entry *entry = &AIAOS_KERNEL_MEMORY_E820_MAP_ADDRESS[i];
 
         /* Type 1 means usable RAM */
-        if (entry->type == 1 && entry->length >= 1024 * 1024)
+        if (entry->type == 1 &&
+            entry->length >= 1024 * 1024)
         {
-            aiaos_kernel_memory = (void *)(unsigned long)entry->base;
-            aiaos_kernel_memory_size = (unsigned long)entry->length;
+            aiaos_kernel_memory = (void *)(unsigned long)(entry->base);
+            aiaos_kernel_memory_size = (unsigned long)(entry->length);
             break;
         }
+    }
+}
+
+void aiaos_kernel_memory_zero(void *ptr, unsigned long size)
+{
+    unsigned char *p = (unsigned char *)ptr;
+    while (size--)
+    {
+        *p++ = 0;
     }
 }
 
