@@ -11,6 +11,7 @@ typedef struct aiaos_kernel_memory_e820_entry
 
 #define AIAOS_KERNEL_MEMORY_E820_MAP_ADDRESS ((aiaos_kernel_memory_e820_entry *)0x5000)
 #define AIAOS_KERNEL_MEMORY_E820_MAP_COUNT (*(unsigned short *)0x4FF0)
+#define AIAOS_KERNEL_MEMORY_OFFSET 0x0UL /* 0 MB */
 
 static void *aiaos_kernel_memory = 0;
 static unsigned long aiaos_kernel_memory_size = 0;
@@ -24,10 +25,10 @@ void aiaos_kernel_memory_initialize(void)
 
         /* Type 1 means usable RAM */
         if (entry->type == 1 &&
-            entry->length >= 1024 * 1024)
+            entry->length >= AIAOS_KERNEL_MEMORY_OFFSET + (1024 * 1024))
         {
-            aiaos_kernel_memory = (void *)(unsigned long)(entry->base);
-            aiaos_kernel_memory_size = (unsigned long)(entry->length);
+            aiaos_kernel_memory = (void *)(unsigned long)(entry->base + AIAOS_KERNEL_MEMORY_OFFSET);
+            aiaos_kernel_memory_size = (unsigned long)(entry->length - AIAOS_KERNEL_MEMORY_OFFSET);
             break;
         }
     }
