@@ -8,6 +8,8 @@ LICENSE
   See end of file for detailed license information.
 
 */
+#include "aiaos_kernel_memory.h"
+
 #define VGA_COLUMNS_NUM 80
 #define VGA_ROWS_NUM 25
 #define VGA_MEMORY (volatile char *)0xB8000
@@ -37,14 +39,76 @@ void vga_write_string(const char *str, int row_offset, int col_offset, char colo
     }
 }
 
+void reverse(char *str, int len)
+{
+    int i = 0;
+    int j = len - 1;
+    char temp;
+    while (i < j)
+    {
+        temp = str[i];
+        str[i] = str[j];
+        str[j] = temp;
+        i++;
+        j--;
+    }
+}
+
+void ultoa(unsigned long value, char *buffer)
+{
+    int i = 0;
+
+    if (value == 0)
+    {
+        buffer[i++] = '0';
+        buffer[i] = '\0';
+        return;
+    }
+
+    while (value > 0)
+    {
+        unsigned long digit = value % 10;
+        buffer[i++] = (char)('0' + digit);
+        value /= 10;
+    }
+
+    buffer[i] = '\0';
+    reverse(buffer, i);
+}
+
+void *ptr_to_string(void *ptr)
+{
+    static char buffer[19]; /* "0x" + 16 hex digits + null terminator */
+    unsigned long value = (unsigned long)(unsigned long *)ptr;
+    int i = 0;
+    int shift;
+    char hex_chars[] = "0123456789abcdef";
+
+    buffer[i++] = '0';
+    buffer[i++] = 'x';
+
+    /* Write 16 hex digits, most significant nibble first */
+    for (shift = (sizeof(unsigned long) * 8) - 4; shift >= 0; shift -= 4)
+    {
+        char digit = (char)((value >> shift) & 0xF);
+        buffer[i++] = hex_chars[(int)digit];
+    }
+
+    buffer[i] = '\0';
+    return (void *)buffer;
+}
+
 void _start_kernel(void)
 {
     int aiaos_logo_length = 23;
     int aiaos_logo_col_offset = (VGA_COLUMNS_NUM - aiaos_logo_length) / 2;
     int aiaos_logo_row_offset = 1;
     int aiaos_logo_long_col_offset = (VGA_COLUMNS_NUM - 34) / 2;
+    char buf[21];
 
     vga_clear_screen();
+
+    aiaos_kernel_memory_initialize();
 
     /* Logo and Header Text */
     vga_write_string("   _   _   _   _   _", aiaos_logo_row_offset++, aiaos_logo_col_offset, 0x02);
@@ -53,9 +117,17 @@ void _start_kernel(void)
     vga_write_string("  \\_/ \\_/ \\_/ \\_/ \\_/", aiaos_logo_row_offset++, aiaos_logo_col_offset, 0x02);
     vga_write_string("Application is an operating system", aiaos_logo_row_offset += 2, aiaos_logo_long_col_offset, 0x02);
 
-    /* Information */
+    /* General Information */
     vga_write_string("> Version: 0.1", 12, 0, 0x02);
     vga_write_string("> Hello from 64bit AIAOS with C89 Kernel", 13, 0, 0x02);
+
+    /* Available Memory Infomration */
+    vga_write_string("> Memory Base:", 14, 0, 0x02);
+    vga_write_string((char *)ptr_to_string(aiaos_kernel_memory), 14, 15, 0x02);
+
+    ultoa(aiaos_kernel_memory_size, buf);
+    vga_write_string("> Memory Size:", 15, 0, 0x02);
+    vga_write_string(buf, 15, 15, 0x02);
 
     /* Footer */
     vga_write_string("https://github.com/nickscha/aiaos", 23, aiaos_logo_long_col_offset, 0x02);

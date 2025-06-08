@@ -3,8 +3,8 @@
 MEMORY
 {
     boot_sector (rwx) : ORIGIN = 0x7c00, LENGTH = 512
-    stage2 (rwx) : ORIGIN = 0x7e00, LENGTH = 512
-    kernel (rwx) : ORIGIN = 0x8000, LENGTH = 0x10000
+    stage2 (rwx) : ORIGIN = 0x7e00, LENGTH = 0x2000
+    kernel (rwx) : ORIGIN = 0x9e00, LENGTH = 0x10000
 }
 
 ENTRY(__start)

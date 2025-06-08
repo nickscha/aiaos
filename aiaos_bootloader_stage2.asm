@@ -5,8 +5,14 @@
     mov bx, stage2_msg
     call print_string
 
-    ;; Load GDT and switch to protected mode
+    memmap_entry_size    equ 24
+    memmap_max_entries   equ 32
+    memmap_addr          equ 0x5000        ; entries start here
+    memmap_entry_count   equ 0x4FF0        ; safer separate location for count
 
+    call get_memory_map
+
+    ;; Load GDT and switch to protected mode
     cli                     ; Can't have interrupts during the switch
     lgdt [gdt32_pseudo_descriptor]
 
@@ -40,6 +46,77 @@
         popa
         ret
 
+   get_memory_map:
+        push ax
+        push bx
+        push cx
+        push dx
+        push si
+        push di
+        push bp
+        push ds
+        push es
+
+        ;; Clear memory map region
+        mov ax, 0
+        mov es, ax
+        mov di, memmap_addr
+        mov cx, (memmap_entry_size * memmap_max_entries) / 2
+        xor ax, ax
+        rep stosw
+
+        ;; Clear count
+        mov word [memmap_entry_count], 0
+
+        xor ebx, ebx
+        xor si, si
+
+    .get_entry:
+        ;; Compute ES:DI = memmap_addr + si * 24
+        mov ax, 0
+        mov es, ax
+        mov di, memmap_addr
+        mov cx, si
+        mov ax, memmap_entry_size
+        mul cx
+        add di, ax
+
+        ;; INT 15h E820
+        mov eax, 0xE820
+        mov edx, 0x534D4150
+        mov ecx, memmap_entry_size
+        int 0x15
+        jc .done
+        cmp eax, 0x534D4150
+        jne .done
+
+        inc si
+        mov [memmap_entry_count], si
+        test ebx, ebx
+        jnz .get_entry
+
+    .done:
+        ;; Print memory map count at top of VGA
+        mov ax, 0xb800
+        mov es, ax
+        mov si, memmap_entry_count
+        mov di, 160 * 5        ; row 5
+
+        mov al, '0'
+        add al, byte [memmap_entry_count]
+        mov ah, 0x0F
+        mov [es:di], ax
+
+        pop es
+        pop ds
+        pop bp
+        pop di
+        pop si
+        pop dx
+        pop cx
+        pop bx
+        pop ax
+        ret
 
     [bits 32]
 
