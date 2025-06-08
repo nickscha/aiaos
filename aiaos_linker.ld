@@ -11,18 +11,10 @@ ENTRY(__start)
 SECTIONS
 {
     .boot_sector : { *(.boot_sector); } > boot_sector
-    .bootsign (0x7c00 + 510) :
-    {
-        BYTE(0x55)
-        BYTE(0xaa)
-    } > boot_sector
+    .bootsign (0x7c00 + 510) : { BYTE(0x55) BYTE(0xaa) } > boot_sector
     .stage2 : { *(.stage2); } > stage2
     .text : { *(.text); } > kernel
     .data : { *(.data); } > kernel
     .rodata : { *(.rodata); } > kernel
-    .bss :
-    {
-        *(.bss)
-        *(COMMON)
-    } > kernel
+    .bss : { *(.bss) *(COMMON) } > kernel
 }
