@@ -94,7 +94,11 @@ void _start_kernel(void)
     unsigned long eh820_usable_count = 0;
 
     aiaos_kernel_memory_initialize();
-    aiaos_kernel_memory_zero(aiaos_kernel_memory, 1000 * 1000);
+
+    /* TODO: something is wrong with the paging and stack alignment. (1024 * 1024) - 4104) worked (1024 * 1024) - 4103) failed */
+    aiaos_kernel_memory_size = (1024 * 1024) - 4104;
+
+    aiaos_kernel_memory_zero(aiaos_kernel_memory, aiaos_kernel_memory_size);
 
     aiaos_kernel_vga_clear_screen();
 
