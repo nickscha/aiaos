@@ -187,37 +187,36 @@ build_page_table:
     ; Compute address of memmap entry: entry_ptr = ebp + esi * 24
     mov edx, esi
     imul edx, memmap_entry_size
-    add edx, ebp        ; edx = address of current memmap entry
+    add edx, ebp                        ; edx = address of current memmap entry
 
-    ; Load base (64-bit) into eax:edx
-    mov eax, [edx]
-    mov ebx, [edx + 4]  ; high part of base
+    ; Load base (low and high)
+    mov eax, [edx]                      ; base[31:0]
+    mov ebx, [edx + 4]                  ; base[63:32]
 
-    ; Skip high memory regions (>4GB)
+    ; Skip entries above 4 GiB
     test ebx, ebx
     jnz .next
 
-    ; Save base addr in eax
-    push eax
+    push eax                            ; Save base[31:0]
 
-    ; Load length (64-bit) into ebx:ecx
-    mov ebx, [edx + 8]
-    mov ecx, [edx + 12]
+    ; Load length (low and high)
+    mov ebx, [edx + 8]                  ; length[31:0]
+    mov ecx, [edx + 12]                 ; length[63:32]
 
-    ; Load type
+    ; Only map type 1 (usable)
     mov dx, [edx + 16]
     cmp dx, 1
     jne .skip
 
-    ; call identity mapper
-    pop eax         ; restore base address
+    ; Call identity map
+    pop eax                             ; Restore base
     push esi
     call identity_map_region_2mb
     pop esi
     jmp .next
 
 .skip:
-    pop eax         ; discard pushed base
+    pop eax                             ; Discard base
 
 .next:
     inc esi
@@ -227,10 +226,6 @@ build_page_table:
     popa
     ret
 
-; eax = base address
-; ebx = length (low 32-bits)
-; ecx = length high (ignored here)
-; edi = page directory (PD) base
 identity_map_region_2mb:
     push eax
     push ebx
@@ -254,14 +249,13 @@ identity_map_region_2mb:
     ; Calculate PD index = base >> 21
     mov edx, eax
     shr edx, 21
-    mov ecx, edx
     shl edx, 3           ; offset = index * 8 (64-bit entry)
 
     ; Write entry: base | flags
     mov dword [edi + edx], eax
     or  dword [edi + edx], ENTRY_PRESENT_RW_PS
 
-    ; Advance to next page
+    ; Advance to next 2MB page
     add eax, PAGE_SIZE_2MB
     sub ebx, PAGE_SIZE_2MB
     jmp .loop
