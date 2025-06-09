@@ -112,7 +112,7 @@ start_prot_mode:
     mov ebx, prot_mode_msg
     call print_string32
 
-    ;; Build 4 level page table and switch to long mode
+    ;; Build 4 level page table and switch to long mode   
     mov ebx, 0x1000
     call build_page_table
     mov cr3, ebx            ; MMU finds the PML4 table in cr3
@@ -149,47 +149,130 @@ end:
 build_page_table:
     pusha
 
-    PAGE64_PAGE_SIZE equ 0x1000
-    PAGE64_TAB_SIZE equ 0x1000
-    PAGE64_TAB_ENT_NUM equ 512
+    PAGE64_PAGE_SIZE    equ 0x1000
+    PAGE64_TAB_SIZE     equ 0x1000
+    PAGE64_TAB_ENT_NUM  equ 512
+    PAGE_SIZE_2MB       equ 0x200000
+    ENTRY_PRESENT_RW_PS equ 0x83       ; P | RW | PS
 
-    ;; Initialize all four tables to 0. If the present flag is cleared, all other bits in any
-    ;; entry are ignored. So by filling all entries with zeros, they are all "not present".
-    ;; Each repetition zeros four bytes at once. That's why a number of repetitions equal to
-    ;; the size of a single page table is enough to zero all four tables.
-    mov ecx, PAGE64_TAB_SIZE ; ecx stores the number of repetitions
-    mov edi, ebx             ; edi stores the base address
-    xor eax, eax             ; eax stores the value
+    ; EBX = base address for page tables
+    mov edi, ebx
+    xor eax, eax
+    mov ecx, PAGE64_TAB_SIZE * 4 / 4   ; Clear 4 pages
     rep stosd
 
-    ;; Link first entry in PML4 table to the PDP table
-    mov edi, ebx
-    lea eax, [edi + (PAGE64_TAB_SIZE | 11b)] ; Set read/write and present flags
-    mov dword [edi], eax
+    ; Store base in esi for reuse
+    mov esi, ebx
 
-    ;; Link first entry in PDP table to the PD table
-    add edi, PAGE64_TAB_SIZE
-    add eax, PAGE64_TAB_SIZE
-    mov dword [edi], eax
+    ; PML4 -> PDP
+    lea eax, [esi + PAGE64_TAB_SIZE + 0x3]
+    mov [esi], eax
 
-    ;; Link the first entry in the PD table to the page table
-    add edi, PAGE64_TAB_SIZE
-    add eax, PAGE64_TAB_SIZE
-    mov dword [edi], eax
+    ; PDP -> PD
+    lea eax, [esi + PAGE64_TAB_SIZE * 2 + 0x3]
+    mov [esi + PAGE64_TAB_SIZE], eax
 
-    ;; Identity map the first 2 MB of memory in the single page table
-    add edi, PAGE64_TAB_SIZE
-    mov ebx, 11b
-    mov ecx, PAGE64_TAB_ENT_NUM
-build_page_table_set_entry:
-    mov dword [edi], ebx
-    add ebx, PAGE64_PAGE_SIZE
-    add edi, 8
-    loop build_page_table_set_entry
+    ; Base address of PD
+    lea edi, [esi + PAGE64_TAB_SIZE * 2]
 
+    ; Start of memory map
+    mov ebp, memmap_addr
+    mov ecx, [memmap_entry_count]
+    xor esi, esi                        ; memory map index
+
+.map_loop:
+    cmp esi, ecx
+    jge .done
+
+    ; Compute address of memmap entry: entry_ptr = ebp + esi * 24
+    mov edx, esi
+    imul edx, memmap_entry_size
+    add edx, ebp        ; edx = address of current memmap entry
+
+    ; Load base (64-bit) into eax:edx
+    mov eax, [edx]
+    mov ebx, [edx + 4]  ; high part of base
+
+    ; Skip high memory regions (>4GB)
+    test ebx, ebx
+    jnz .next
+
+    ; Save base addr in eax
+    push eax
+
+    ; Load length (64-bit) into ebx:ecx
+    mov ebx, [edx + 8]
+    mov ecx, [edx + 12]
+
+    ; Load type
+    mov dx, [edx + 16]
+    cmp dx, 1
+    jne .skip
+
+    ; call identity mapper
+    pop eax         ; restore base address
+    push esi
+    call identity_map_region_2mb
+    pop esi
+    jmp .next
+
+.skip:
+    pop eax         ; discard pushed base
+
+.next:
+    inc esi
+    jmp .map_loop
+
+.done:
     popa
     ret
 
+; eax = base address
+; ebx = length (low 32-bits)
+; ecx = length high (ignored here)
+; edi = page directory (PD) base
+identity_map_region_2mb:
+    push eax
+    push ebx
+    push ecx
+    push edx
+    push edi
+
+    ; Align base address down to 2MB
+    mov edx, PAGE_SIZE_2MB - 1
+    not edx
+    and eax, edx        ; aligned_base = base & ~(2MB-1)
+
+    ; Align length up to cover full pages
+    add ebx, PAGE_SIZE_2MB - 1
+    and ebx, edx        ; aligned_length = (length + 2MB - 1) & ~(2MB-1)
+
+.loop:
+    cmp ebx, 0
+    jz .done
+
+    ; Calculate PD index = base >> 21
+    mov edx, eax
+    shr edx, 21
+    mov ecx, edx
+    shl edx, 3           ; offset = index * 8 (64-bit entry)
+
+    ; Write entry: base | flags
+    mov dword [edi + edx], eax
+    or  dword [edi + edx], ENTRY_PRESENT_RW_PS
+
+    ; Advance to next page
+    add eax, PAGE_SIZE_2MB
+    sub ebx, PAGE_SIZE_2MB
+    jmp .loop
+
+.done:
+    pop edi
+    pop edx
+    pop ecx
+    pop ebx
+    pop eax
+    ret
 
     [bits 64]
 

@@ -94,9 +94,7 @@ void _start_kernel(void)
     unsigned long eh820_usable_count = 0;
 
     aiaos_kernel_memory_initialize();
-    /*
-    aiaos_kernel_memory_zero(aiaos_kernel_memory, aiaos_kernel_memory_size);
-    */
+    aiaos_kernel_memory_zero(aiaos_kernel_memory, 1000 * 1000);
 
     aiaos_kernel_vga_clear_screen();
 
