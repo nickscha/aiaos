@@ -26,6 +26,19 @@ void reverse(char *str, int len)
     }
 }
 
+/* Converts a 32-bit or 64-bit unsigned integer to hexadecimal string */
+static char *uint_to_hex(char *buf, unsigned long val, int width)
+{
+    static const char hex[] = "0123456789ABCDEF";
+    int i;
+    for (i = width - 1; i >= 0; --i)
+    {
+        buf[i] = hex[val & 0xF];
+        val >>= 4;
+    }
+    return buf + width;
+}
+
 void ultoa(unsigned long value, char *buffer)
 {
     int i = 0;
@@ -74,11 +87,16 @@ void _start_kernel(void)
 {
     int aiaos_logo_length = 23;
     int aiaos_logo_col_offset = (AIAOS_KERNEL_VGA_COLUMNS_NUM - aiaos_logo_length) / 2;
-    int aiaos_logo_row_offset = 1;
+    int aiaos_logo_row_offset = 0;
     int aiaos_logo_long_col_offset = (AIAOS_KERNEL_VGA_COLUMNS_NUM - 34) / 2;
-    char buf[21];
+    char buf[31];
+    int i;
+    unsigned long eh820_usable_count = 0;
 
     aiaos_kernel_memory_initialize();
+    /*
+    aiaos_kernel_memory_zero(aiaos_kernel_memory, aiaos_kernel_memory_size);
+    */
 
     aiaos_kernel_vga_clear_screen();
 
@@ -87,19 +105,50 @@ void _start_kernel(void)
     aiaos_kernel_vga_write_string("  / \\ / \\ / \\ / \\ / \\", aiaos_logo_row_offset++, aiaos_logo_col_offset, 0x02);
     aiaos_kernel_vga_write_string(" ( A | I | A | O | S )", aiaos_logo_row_offset++, aiaos_logo_col_offset, 0x02);
     aiaos_kernel_vga_write_string("  \\_/ \\_/ \\_/ \\_/ \\_/", aiaos_logo_row_offset++, aiaos_logo_col_offset, 0x02);
-    aiaos_kernel_vga_write_string("Application is an operating system", aiaos_logo_row_offset += 2, aiaos_logo_long_col_offset, 0x02);
+    aiaos_kernel_vga_write_string("Application is an operating system", aiaos_logo_row_offset + 1, aiaos_logo_long_col_offset, 0x02);
 
     /* General Information */
-    aiaos_kernel_vga_write_string("> Version: 0.1", 12, 0, 0x02);
-    aiaos_kernel_vga_write_string("> Hello from 64bit AIAOS with C89 Kernel", 13, 0, 0x02);
+    aiaos_kernel_vga_write_string("> Version: 0.1", 8, 0, 0x02);
+    aiaos_kernel_vga_write_string("> Hello from 64bit AIAOS C89 Kernel", 9, 0, 0x02);
 
     /* Available Memory Infomration */
-    aiaos_kernel_vga_write_string("> Memory Base:", 14, 0, 0x02);
-    aiaos_kernel_vga_write_string((char *)ptr_to_string(aiaos_kernel_memory), 14, 15, 0x02);
+    aiaos_kernel_vga_write_string(">   Memory Base:", 10, 0, 0x02);
+    aiaos_kernel_vga_write_string((char *)ptr_to_string(aiaos_kernel_memory), 10, 17, 0x02);
 
     ultoa(aiaos_kernel_memory_size, buf);
-    aiaos_kernel_vga_write_string("> Memory Size:", 15, 0, 0x02);
-    aiaos_kernel_vga_write_string(buf, 15, 15, 0x02);
+    aiaos_kernel_vga_write_string(">   Memory Size:", 11, 0, 0x02);
+    aiaos_kernel_vga_write_string(buf, 11, 17, 0x02);
+
+    /* E820 Information */
+    ultoa((unsigned long)AIAOS_KERNEL_MEMORY_E820_MAP_COUNT, buf);
+    aiaos_kernel_vga_write_string("> EH820 Entries:", 12, 0, 0x02);
+    aiaos_kernel_vga_write_string(buf, 12, 17, 0x02);
+
+    for (i = 0; i < AIAOS_KERNEL_MEMORY_E820_MAP_COUNT; ++i)
+    {
+        aiaos_kernel_memory_e820_entry *entry = &AIAOS_KERNEL_MEMORY_E820_MAP_ADDRESS[i];
+        if (entry->type == 1)
+        {
+            uint_to_hex(buf, entry->base, 16);
+            aiaos_kernel_vga_write_string("b:", 8 + (int)eh820_usable_count, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 3 + 1, 0x02);
+            aiaos_kernel_vga_write_string(buf, 8 + (int)eh820_usable_count, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 3 + 1 + 3, 0x02);
+
+            ultoa(entry->length / 1024 / 1024, buf);
+            aiaos_kernel_vga_write_string("l:", 8 + (int)eh820_usable_count, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 3 + 1 + 20, 0x02);
+            aiaos_kernel_vga_write_string(buf, 8 + (int)eh820_usable_count, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 3 + 1 + 20 + 3, 0x02);
+
+            eh820_usable_count++;
+        }
+    }
+    ultoa(eh820_usable_count, buf);
+    aiaos_kernel_vga_write_string("> EH820  Usable:", 13, 0, 0x02);
+    aiaos_kernel_vga_write_string(buf, 13, 17, 0x02);
+
+    /* Vertical divider */
+    for (i = 0; i < 14; ++i)
+    {
+        aiaos_kernel_vga_write_string("|", 8 + i, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 4, 0x02);
+    }
 
     /* Footer */
     aiaos_kernel_vga_write_string("https://github.com/nickscha/aiaos", 23, aiaos_logo_long_col_offset, 0x02);
