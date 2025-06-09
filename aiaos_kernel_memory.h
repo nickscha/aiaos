@@ -9,8 +9,8 @@ typedef struct aiaos_kernel_memory_e820_entry
     unsigned int acpi_ext;
 } aiaos_kernel_memory_e820_entry;
 
-#define AIAOS_KERNEL_MEMORY_E820_MAP_ADDRESS ((aiaos_kernel_memory_e820_entry *)0x5000)
-#define AIAOS_KERNEL_MEMORY_E820_MAP_COUNT (*(unsigned short *)0x4FF0)
+#define AIAOS_KERNEL_MEMORY_E820_MAP_COUNT (*(unsigned short *)0x6000)
+#define AIAOS_KERNEL_MEMORY_E820_MAP_ADDRESS ((aiaos_kernel_memory_e820_entry *)0x6020)
 #define AIAOS_KERNEL_MEMORY_OFFSET 0x0UL /* 0 MB */
 
 static void *aiaos_kernel_memory = 0;

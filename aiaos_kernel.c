@@ -133,9 +133,9 @@ void _start_kernel(void)
             aiaos_kernel_vga_write_string("b:", 8 + (int)eh820_usable_count, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 3 + 1, 0x02);
             aiaos_kernel_vga_write_string(buf, 8 + (int)eh820_usable_count, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 3 + 1 + 3, 0x02);
 
-            ultoa(entry->length / 1024 / 1024, buf);
-            aiaos_kernel_vga_write_string("l:", 8 + (int)eh820_usable_count, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 3 + 1 + 20, 0x02);
-            aiaos_kernel_vga_write_string(buf, 8 + (int)eh820_usable_count, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 3 + 1 + 20 + 3, 0x02);
+            ultoa(entry->length, buf);
+            aiaos_kernel_vga_write_string("l_kb:", 8 + (int)eh820_usable_count, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 3 + 1 + 20, 0x02);
+            aiaos_kernel_vga_write_string(buf, 8 + (int)eh820_usable_count, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 3 + 1 + 20 + 6, 0x02);
 
             eh820_usable_count++;
         }

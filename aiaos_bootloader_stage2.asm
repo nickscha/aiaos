@@ -7,8 +7,8 @@
 
     memmap_entry_size    equ 24
     memmap_max_entries   equ 32
-    memmap_addr          equ 0x5000        ; entries start here
-    memmap_entry_count   equ 0x4FF0        ; safer separate location for count
+    memmap_entry_count   equ 0x6000        ; safer separate location for count
+    memmap_addr          equ 0x6020        ; entries start here        
 
     call get_memory_map
 
