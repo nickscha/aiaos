@@ -285,10 +285,7 @@ start_long_mode:
     or    rax, 1<<9        ; set OSFXSR
     mov   cr4, rax
 
-    ;; (3) Carve out a safe stack in identity‑mapped RAM
-    ;;     Pick an address below your 2 MiB identity map,
-    ;;     and well away from page tables at 0x1000–0x4fff
-    ;;     and your kernel at 0x8000–….
+    ;; (3) Set Stack Address
     mov   rsp, 0x200000    ; Set stack to a 16-byte aligned address
     mov   rbp, rsp
 
