@@ -277,6 +277,10 @@ start_long_mode:
     mov ebx, long_mode_msg
     call print_string64
 
+    ;; (1) Load a basic Interrupt Descriptor Table (IDT)
+    call setup_idt64
+    lidt [idt64_pointer]
+
     ;; (2) Enable SSE/XMM support
     mov   rax, cr0
     and   rax, ~(1<<2)     ; clear EM
@@ -289,6 +293,7 @@ start_long_mode:
     mov   rsp, 0x200000    ; Set stack to a 16-byte aligned address
     mov   rbp, rsp
 
+    ;; (4) Call kernel
     extern _start_kernel
     call _start_kernel
 
@@ -299,6 +304,7 @@ end64:
 %include "aiaos_bootloader_stage2_print.asm"
 %include "aiaos_bootloader_stage2_gdt32.asm"
 %include "aiaos_bootloader_stage2_gdt64.asm"
+%include "aiaos_bootloader_stage2_idt64.asm"
 
 stage2_msg: db "Hello from stage 2", 13, 10, 0
 prot_mode_msg: db "Hello from protected mode", 0
