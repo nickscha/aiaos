@@ -166,11 +166,13 @@ build_page_table:
 
     ; PML4 -> PDP
     lea eax, [esi + PAGE64_TAB_SIZE + 0x3]
-    mov [esi], eax
+    mov [esi], eax                      ; Write lower 32 bits
+    mov dword [esi + 4], 0              ; Zero out upper 32 bits
 
     ; PDP -> PD
     lea eax, [esi + PAGE64_TAB_SIZE * 2 + 0x3]
-    mov [esi + PAGE64_TAB_SIZE], eax
+    mov [esi + PAGE64_TAB_SIZE], eax    ; Write lower 32 bits
+    mov dword [esi + PAGE64_TAB_SIZE + 4], 0 ; Zero out upper 32 bits
 
     ; Base address of PD
     lea edi, [esi + PAGE64_TAB_SIZE * 2]
@@ -252,8 +254,9 @@ identity_map_region_2mb:
     shl edx, 3           ; offset = index * 8 (64-bit entry)
 
     ; Write entry: base | flags
-    mov dword [edi + edx], eax
-    or  dword [edi + edx], ENTRY_PRESENT_RW_PS
+    mov dword [edi + edx], eax      ; Write the 2MB-aligned physical address
+    or  dword [edi + edx], ENTRY_PRESENT_RW_PS ; OR the flags into the lower 32 bits
+    mov dword [edi + edx + 4], 0    ; Zero out the upper 32 bits of the entry
 
     ; Advance to next 2MB page
     add eax, PAGE_SIZE_2MB
@@ -286,7 +289,7 @@ start_long_mode:
     ;;     Pick an address below your 2 MiB identity map,
     ;;     and well away from page tables at 0x1000–0x4fff
     ;;     and your kernel at 0x8000–….
-    mov   rsp, 0x200000    ; e.g. 2 MiB
+    mov   rsp, 0x200000    ; Set stack to a 16-byte aligned address
     mov   rbp, rsp
 
     extern _start_kernel
