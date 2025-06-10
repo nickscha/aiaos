@@ -96,7 +96,6 @@ void _start_kernel(void)
     aiaos_kernel_memory_initialize();
 
     /* TODO: something is wrong with the paging and stack alignment. (1024 * 1024) - 4104) worked (1024 * 1024) - 4103) failed */
-    aiaos_kernel_memory_zero(aiaos_kernel_memory, (1024 * 1024) - 4104);
 
     aiaos_kernel_vga_clear_screen();
 
