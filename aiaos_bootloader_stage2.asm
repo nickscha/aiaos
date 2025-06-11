@@ -149,94 +149,86 @@ end:
 build_page_table:
     pusha
 
-    PAGE64_PAGE_SIZE    equ 0x1000     ; 4KB
-    PAGE64_TAB_SIZE     equ 0x1000     ; Size of a page table (512 entries * 8 bytes/entry = 4KB)
-    PAGE64_TAB_ENT_NUM  equ 512
-    PAGE_SIZE_2MB       equ 0x200000   ; 2MB
-    ENTRY_PRESENT_RW_PS equ 0x83       ; Present | Read/Write | Page Size (for 2MB pages)
+    ; --- Constants ---
+    PAGE64_PAGE_SIZE      equ 0x1000      ; 4KB
+    PAGE64_TAB_SIZE       equ 0x1000      ; Size of one table (PML4, PDPT, PD)
+    PAGE_SIZE_2MB         equ 0x200000    ; 2MB, the size of pages we are mapping
+    ENTRY_PRESENT_RW_PS   equ 0x83        ; Present | Read/Write | Page Size (PS bit)
 
-    ; EBX = base address for page tables (e.g., 0x1000)
-    mov edi, ebx
+    ; --- Memory locations from your existing code ---
+    memmap_entry_count    equ 0x6000
+    memmap_addr           equ 0x6020
+    E820_ENTRY_SIZE       equ 24
+    
+    ; EBX = base address for page tables, passed as 0x1000
+    ; esi will hold the base of the tables for easy reference
+    mov esi, ebx 
+
+    ; --- 1. Clear Page Table Structures ---
+    ; Clear 3 tables: PML4, one PDPT, and one PD.
+    mov edi, esi
     xor eax, eax
-    mov ecx, PAGE64_TAB_SIZE * 4 / 4   ; Clear 4 pages (PML4, PDPT, PD, and one PT)
-    rep stosd                          ; Clears 0x1000, 0x2000, 0x3000, 0x4000
+    mov ecx, (PAGE64_TAB_SIZE * 3) / 4 
+    rep stosd
 
-    ; Store base in esi for reuse
-    mov esi, ebx ; esi = 0x1000 (PML4 base)
-
-    ; --- Level 4: PML4 (Page Map Level 4) Table (at 0x1000) ---
-    ; PML4[0] -> points to PDPT (at 0x2000)
+    ; --- 2. Link the Page Table Structures ---
+    ; PML4[0] -> points to PDPT (at esi + 0x1000)
     lea eax, [esi + PAGE64_TAB_SIZE + 0x3] ; Address of PDPT + Present/RW
     mov [esi], eax
-    mov dword [esi + 4], 0                 ; Zero out upper 32 bits (PML4 entry is 64-bit)
-
-    ; --- Level 3: PDPT (Page Directory Pointer Table) (at 0x2000) ---
-    ; PDPT[0] -> points to PD (at 0x3000)
+    
+    ; PDPT[0] -> points to PD (at esi + 0x2000)
     lea eax, [esi + PAGE64_TAB_SIZE * 2 + 0x3] ; Address of PD + Present/RW
-    mov [esi + PAGE64_TAB_SIZE], eax           ; This is PDPT[0]
-    mov dword [esi + PAGE64_TAB_SIZE + 4], 0   ; Zero out upper 32 bits
+    mov [esi + PAGE64_TAB_SIZE], eax
 
-    ; --- Level 2: PD (Page Directory) Table (at 0x3000) ---
-    ; Now, populate the PD to map the necessary 2MB regions.
-    ; Your kernel + stack occupy up to 0x219DFF.
-    ; This means you need to map at least the 2MB page starting at 0x0
-    ; AND the 2MB page starting at 0x200000.
+    ; --- 3. Iterate E820 Map and Create Mappings ---
+    mov ecx, [memmap_entry_count]       ; Load the number of E820 entries
+    mov ebp, memmap_addr                ; EBP = pointer to the start of the map
 
-    mov edi, esi ; edi = 0x1000 (PML4 base)
+.e820_loop:
+    ; Check if the entry is of type 1 (Usable RAM)
+    mov eax, [ebp + 16]                 ; Offset of 'type' field in E820 entry
+    cmp eax, 1
+    jne .next_entry                     ; Skip if not usable memory
 
-    ; Map the first 2MB page (0x000000 - 0x1FFFFF)
-    ; PD entry index 0 (for virtual addresses 0x000000-0x1FFFFF)
-    mov eax, 0x000000 | ENTRY_PRESENT_RW_PS ; Physical address 0 + flags
-    mov [edi + PAGE64_TAB_SIZE * 2 + 0*8], eax ; PD[0]
-    mov dword [edi + PAGE64_TAB_SIZE * 2 + 0*8 + 4], 0
+    ; This is a usable memory region.
+    mov eax, [ebp]                      ; Base address (low 32 bits)
+    mov edx, [ebp + 8]                  ; Length (low 32 bits)
+    add edx, eax                        ; edx = end address of the region
 
-    ; Map the second 2MB page (0x200000 - 0x3FFFFF)
-    ; This is where your stack lives (0x19e00 to 0x219dff)
-    ; PD entry index 1 (for virtual addresses 0x200000-0x3FFFFF)
-    mov eax, 0x200000 | ENTRY_PRESENT_RW_PS ; Physical address 0x200000 + flags
-    mov [edi + PAGE64_TAB_SIZE * 2 + 1*8], eax ; PD[1]
-    mov dword [edi + PAGE64_TAB_SIZE * 2 + 1*8 + 4], 0
+    ; Align the starting address DOWN to the nearest 2MB boundary for our loop.
+    and eax, ~(PAGE_SIZE_2MB - 1)
 
-    ; You can extend this for as many 2MB pages as you have physical memory,
-    ; up to a reasonable limit, or based on your E820 map.
-    ; For a 16MB QEMU setup, you'd map:
-    ; PD[0] -> 0x000000 - 0x1FFFFF
-    ; PD[1] -> 0x200000 - 0x3FFFFF
-    ; ...
-    ; PD[7] -> 0xE00000 - 0xFFFFFF (Covers up to 16MB - 1 byte)
+.map_2mb_pages_loop:
+    ; Check if our current physical address to map (eax) is past the end of the region (edx)
+    cmp eax, edx
+    jge .next_entry
 
-    ; Original E820 loop (simplified, as manual mapping is often safer initially)
-    ; The original loop and identity_map_region_2mb might be redundant or problematic
-    ; if not carefully implemented for 2MB pages that span regions.
-    ; For now, let's keep the manual mapping for guaranteed coverage.
-    ; If you truly want to use E820, you need to refine `identity_map_region_2mb`
-    ; to iterate through 2MB aligned chunks within the E820 region.
+    ; We have a 2MB chunk to map. eax = physical address.
+    ; Calculate the address of the Page Directory Entry (PDE).
+    mov edi, eax                        ; Copy physical address
+    shr edi, 21                         ; edi = Page Directory Index (phys_addr / 2MB)
+    shl edi, 3                          ; edi = Index * 8 (offset in bytes into PD)
+    add edi, esi                        ; edi += base of tables
+    add edi, PAGE64_TAB_SIZE * 2        ; edi = address of the PDE inside the PD
 
-    ; --- Removed the E820 mapping loop for clarity and to solve the immediate issue ---
-    ; Keeping the E820 loop if you can fix identity_map_region_2mb
-    ; However, the manual mapping for PD[0] and PD[1] directly addresses your crash.
+    ; Create the 64-bit Page Directory Entry.
+    mov ebx, eax                                ; Copy physical address to a temporary register
+    or ebx, ENTRY_PRESENT_RW_PS                 ; Apply flags using the OR instruction
+    mov dword [edi], ebx                        ; Store the complete PDE low 32 bits
+    mov dword [edi + 4], 0                      ; PDE high 32 bits = 0 (for memory < 4GB)
+    
+    ; Move to the next 2MB chunk
+    add eax, PAGE_SIZE_2MB
+    jmp .map_2mb_pages_loop
 
-    ; Optional: If you want to continue mapping more memory based on E820
-    ; You'd need a robust `identity_map_region_2mb` that correctly handles
-    ; partial 2MB page starts/ends for E820 regions.
-    ; A simpler approach is to map full 2MB pages up to the maximum physical
-    ; memory you expect to use.
-
-    ; Example for mapping all of your 16MB QEMU memory with 2MB pages:
-    ; mov eax, 0x0
-    ; mov ecx, 8 ; Map 8 * 2MB = 16MB
-    ; mov edi, esi + PAGE64_TAB_SIZE * 2 ; Base of PD table
-    ; .map_2mb_pages_loop:
-    ;    mov dword [edi], eax | ENTRY_PRESENT_RW_PS
-    ;    mov dword [edi + 4], 0
-    ;    add eax, PAGE_SIZE_2MB
-    ;    add edi, 8 ; Next PD entry
-    ;    loop .map_2mb_pages_loop
+.next_entry:
+    add ebp, E820_ENTRY_SIZE            ; Move to the next E820 entry
+    dec ecx
+    jnz .e820_loop
 
 .done:
     popa
     ret
-
 
     [bits 64]
 extern _stack_top ;  _stack_top_aligned comes from linker
