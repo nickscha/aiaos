@@ -113,7 +113,7 @@ void _start_kernel(void)
 
     /* Available Memory Infomration */
     aiaos_kernel_vga_write_string(">   Memory Base:", 10, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
-    aiaos_kernel_vga_write_string((char *)ptr_to_string(aiaos_kernel_memory), 10, 17, aiaos_kernel_vga_make_color(AIAOS_KERNEL_VGA_COLOR_WHITE, AIAOS_KERNEL_VGA_COLOR_RED));
+    aiaos_kernel_vga_write_string((char *)ptr_to_string(aiaos_kernel_memory), 10, 17, aiaos_kernel_vga_make_color(AIAOS_KERNEL_VGA_COLOR_WHITE, AIAOS_KERNEL_VGA_COLOR_GREEN));
 
     ultoa(aiaos_kernel_memory_size, buf);
     aiaos_kernel_vga_write_string(">   Memory Size:", 11, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
