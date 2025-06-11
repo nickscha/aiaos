@@ -12,8 +12,8 @@ nasm -f elf64 aiaos_bootloader_stage2.asm -o aiaos_bootloader_stage2.s.o
 
 REM Compile Kernel and Link Bootloader Stages
 x86_64-elf-gcc %DEF_COMPILER_FLAGS% -c aiaos_kernel.c -o aiaos_kernel.c.o
-x86_64-elf-ld -T aiaos_linker.ld -o linked.o aiaos_bootloader_stage1.s.o aiaos_kernel.c.o aiaos_bootloader_stage2.s.o
-x86_64-elf-objcopy -O binary linked.o aiaos.img
+x86_64-elf-ld -T aiaos_linker.ld -o aiaos_linker.o aiaos_bootloader_stage1.s.o aiaos_kernel.c.o aiaos_bootloader_stage2.s.o
+x86_64-elf-objcopy -O binary aiaos_linker.o aiaos.img
 
 REM Run QEMU
 qemu-system-x86_64 -m 16m -no-reboot -drive file=aiaos.img,format=raw,index=0,media=disk
