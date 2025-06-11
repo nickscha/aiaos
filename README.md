@@ -4,7 +4,7 @@
 <a href="https://nickscha.github.io/"><img src="aiaos.jpg"></a>
 </p>
 
-A C89 nostdlib bare metal 64bit operating system.
+A C89 nostdlib bare metal 64bit operating system with a custom bootloader.
 
 The name **AIAOS** is a simplification and stands for "Application is an Operating System".
  
