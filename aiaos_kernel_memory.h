@@ -9,9 +9,12 @@ typedef struct aiaos_kernel_memory_e820_entry
     unsigned int acpi_ext;
 } aiaos_kernel_memory_e820_entry;
 
+/* Stack top address as specified in aiaios_linker.ld*/
+extern char _stack_top;
+
 #define AIAOS_KERNEL_MEMORY_E820_MAP_COUNT (*(unsigned short *)0x6000)
 #define AIAOS_KERNEL_MEMORY_E820_MAP_ADDRESS ((aiaos_kernel_memory_e820_entry *)0x6020)
-#define AIAOS_KERNEL_MEMORY_OFFSET 0x219e00UL /* Stack Offset. See aiaos_linker.ld */
+#define AIAOS_KERNEL_MEMORY_OFFSET ((unsigned long)&_stack_top) /* Stack Offset. See aiaos_linker.ld */
 
 static void *aiaos_kernel_memory = 0;
 static unsigned long aiaos_kernel_memory_size = 0;
