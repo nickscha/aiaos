@@ -76,17 +76,6 @@
         jnz .get_entry
 
     .done:
-        ;; Print memory map count at top of VGA
-        mov ax, 0xb800
-        mov es, ax
-        mov si, memmap_entry_count
-        mov di, 160 * 5        ; row 5
-
-        mov al, '0'
-        add al, byte [memmap_entry_count]
-        mov ah, 0x0F
-        mov [es:di], ax
-
         pop es
         pop ds
         pop bp
@@ -145,7 +134,7 @@ end:
     hlt
     jmp end
 
-    ;; Builds a 4 level page table starting at the address that's passed in ebx.
+;; Builds a 4 level page table starting at the address that's passed in ebx.
 build_page_table:
     pusha
 
@@ -155,11 +144,6 @@ build_page_table:
     PAGE_SIZE_2MB         equ 0x200000    ; 2MB, the size of pages we are mapping
     ENTRY_PRESENT_RW_PS   equ 0x83        ; Present | Read/Write | Page Size (PS bit)
 
-    ; --- Memory locations from your existing code ---
-    memmap_entry_count    equ 0x6000
-    memmap_addr           equ 0x6020
-    E820_ENTRY_SIZE       equ 24
-    
     ; EBX = base address for page tables, passed as 0x1000
     ; esi will hold the base of the tables for easy reference
     mov esi, ebx 
@@ -212,17 +196,17 @@ build_page_table:
     add edi, PAGE64_TAB_SIZE * 2        ; edi = address of the PDE inside the PD
 
     ; Create the 64-bit Page Directory Entry.
-    mov ebx, eax                                ; Copy physical address to a temporary register
-    or ebx, ENTRY_PRESENT_RW_PS                 ; Apply flags using the OR instruction
-    mov dword [edi], ebx                        ; Store the complete PDE low 32 bits
-    mov dword [edi + 4], 0                      ; PDE high 32 bits = 0 (for memory < 4GB)
+    mov ebx, eax                        ; Copy physical address to a temporary register
+    or ebx, ENTRY_PRESENT_RW_PS         ; Apply flags using the OR instruction
+    mov dword [edi], ebx                ; Store the complete PDE low 32 bits
+    mov dword [edi + 4], 0              ; PDE high 32 bits = 0 (for memory < 4GB)
     
     ; Move to the next 2MB chunk
     add eax, PAGE_SIZE_2MB
     jmp .map_2mb_pages_loop
 
 .next_entry:
-    add ebp, E820_ENTRY_SIZE            ; Move to the next E820 entry
+    add ebp, memmap_entry_size          ; Move to the next E820 entry
     dec ecx
     jnz .e820_loop
 
@@ -231,7 +215,7 @@ build_page_table:
     ret
 
     [bits 64]
-extern _stack_top ;  _stack_top_aligned comes from linker
+extern _stack_top ;  _stack_top comes from aiaos_linker.ld
 
 start_long_mode:
     mov ebx, long_mode_msg
@@ -266,6 +250,6 @@ end64:
 %include "aiaos_bootloader_stage2_gdt64.asm"
 %include "aiaos_bootloader_stage2_idt64.asm"
 
-stage2_msg: db "Hello from stage 2", 13, 10, 0
-prot_mode_msg: db "Hello from protected mode", 0
-long_mode_msg: db "Entered 64-bit mode", 0
+stage2_msg: db "AIAOS stage 2", 13, 10, 0
+prot_mode_msg: db "AIAOS protected mode", 0
+long_mode_msg: db "AIAOS entering 64-bit mode", 0

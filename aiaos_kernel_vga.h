@@ -26,6 +26,7 @@ typedef enum aiaos_kernel_vga_color
     AIAOS_KERNEL_VGA_COLOR_LIGHT_BROWN = 14,
     AIAOS_KERNEL_VGA_COLOR_WHITE = 15,
     AIAOS_KERNEL_VGA_COLOR_COUNT
+
 } aiaos_kernel_vga_color;
 
 char aiaos_kernel_vga_make_color(aiaos_kernel_vga_color foreground, aiaos_kernel_vga_color background)

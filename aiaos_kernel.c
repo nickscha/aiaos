@@ -8,80 +8,9 @@ LICENSE
   See end of file for detailed license information.
 
 */
+#include "aiaos_kernel_types.h"
 #include "aiaos_kernel_memory.h"
 #include "aiaos_kernel_vga.h"
-
-void reverse(char *str, int len)
-{
-    int i = 0;
-    int j = len - 1;
-    char temp;
-    while (i < j)
-    {
-        temp = str[i];
-        str[i] = str[j];
-        str[j] = temp;
-        i++;
-        j--;
-    }
-}
-
-/* Converts a 32-bit or 64-bit unsigned integer to hexadecimal string */
-static char *uint_to_hex(char *buf, unsigned long val, int width)
-{
-    static const char hex[] = "0123456789ABCDEF";
-    int i;
-    for (i = width - 1; i >= 0; --i)
-    {
-        buf[i] = hex[val & 0xF];
-        val >>= 4;
-    }
-    return buf + width;
-}
-
-void ultoa(unsigned long value, char *buffer)
-{
-    int i = 0;
-
-    if (value == 0)
-    {
-        buffer[i++] = '0';
-        buffer[i] = '\0';
-        return;
-    }
-
-    while (value > 0)
-    {
-        unsigned long digit = value % 10;
-        buffer[i++] = (char)('0' + digit);
-        value /= 10;
-    }
-
-    buffer[i] = '\0';
-    reverse(buffer, i);
-}
-
-void *ptr_to_string(void *ptr)
-{
-    static char buffer[19]; /* "0x" + 16 hex digits + null terminator */
-    unsigned long value = (unsigned long)(unsigned long *)ptr;
-    int i = 0;
-    int shift;
-    char hex_chars[] = "0123456789abcdef";
-
-    buffer[i++] = '0';
-    buffer[i++] = 'x';
-
-    /* Write 16 hex digits, most significant nibble first */
-    for (shift = (sizeof(unsigned long) * 8) - 4; shift >= 0; shift -= 4)
-    {
-        char digit = (char)((value >> shift) & 0xF);
-        buffer[i++] = hex_chars[(int)digit];
-    }
-
-    buffer[i] = '\0';
-    return (void *)buffer;
-}
 
 void _start_kernel(void)
 {
@@ -113,42 +42,42 @@ void _start_kernel(void)
 
     /* Available Memory Infomration */
     aiaos_kernel_vga_write_string(">   Memory Base:", 10, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
-    aiaos_kernel_vga_write_string((char *)ptr_to_string(aiaos_kernel_memory), 10, 17, aiaos_kernel_vga_make_color(AIAOS_KERNEL_VGA_COLOR_WHITE, AIAOS_KERNEL_VGA_COLOR_GREEN));
+    aiaos_kernel_vga_write_string((char *)aiaos_kernel_types_ptr_to_string(aiaos_kernel_memory), 10, 17, aiaos_kernel_vga_make_color(AIAOS_KERNEL_VGA_COLOR_WHITE, AIAOS_KERNEL_VGA_COLOR_GREEN));
 
-    ultoa(aiaos_kernel_memory_size, buf);
+    aiaos_kernel_types_ultoa(aiaos_kernel_memory_size, buf);
     aiaos_kernel_vga_write_string(">   Memory Size:", 11, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
     aiaos_kernel_vga_write_string(buf, 11, 17, AIAOS_KERNEL_VGA_COLOR_GREEN);
-
-    /* E820 Information */
-    ultoa((unsigned long)AIAOS_KERNEL_MEMORY_E820_MAP_COUNT, buf);
-    aiaos_kernel_vga_write_string("> EH820 Entries:", 12, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
-    aiaos_kernel_vga_write_string(buf, 12, 17, AIAOS_KERNEL_VGA_COLOR_GREEN);
-
-    for (i = 0; i < AIAOS_KERNEL_MEMORY_E820_MAP_COUNT; ++i)
-    {
-        aiaos_kernel_memory_e820_entry *entry = &AIAOS_KERNEL_MEMORY_E820_MAP_ADDRESS[i];
-        if (entry->type == 1)
-        {
-            uint_to_hex(buf, entry->base, 16);
-            aiaos_kernel_vga_write_string("b:", 8 + (int)eh820_usable_count, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 3 + 1, AIAOS_KERNEL_VGA_COLOR_GREEN);
-            aiaos_kernel_vga_write_string(buf, 8 + (int)eh820_usable_count, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 3 + 1 + 3, AIAOS_KERNEL_VGA_COLOR_GREEN);
-
-            ultoa(entry->length, buf);
-            aiaos_kernel_vga_write_string("l_kb:", 8 + (int)eh820_usable_count, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 3 + 1 + 20, AIAOS_KERNEL_VGA_COLOR_GREEN);
-            aiaos_kernel_vga_write_string(buf, 8 + (int)eh820_usable_count, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 3 + 1 + 20 + 6, AIAOS_KERNEL_VGA_COLOR_GREEN);
-
-            eh820_usable_count++;
-        }
-    }
-    ultoa(eh820_usable_count, buf);
-    aiaos_kernel_vga_write_string("> EH820  Usable:", 13, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
-    aiaos_kernel_vga_write_string(buf, 13, 17, AIAOS_KERNEL_VGA_COLOR_GREEN);
 
     /* Vertical divider */
     for (i = 0; i < 14; ++i)
     {
         aiaos_kernel_vga_write_string("|", 8 + i, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 4, aiaos_kernel_vga_make_color(AIAOS_KERNEL_VGA_COLOR_GREEN, AIAOS_KERNEL_VGA_COLOR_GREEN));
     }
+
+    /* E820 Information */
+    aiaos_kernel_types_ultoa((unsigned long)AIAOS_KERNEL_MEMORY_E820_MAP_COUNT, buf);
+    aiaos_kernel_vga_write_string("EH820 Entries:", 8, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 2, AIAOS_KERNEL_VGA_COLOR_GREEN);
+    aiaos_kernel_vga_write_string(buf, 8, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 2 + 15, AIAOS_KERNEL_VGA_COLOR_GREEN);
+
+    for (i = 0; i < AIAOS_KERNEL_MEMORY_E820_MAP_COUNT; ++i)
+    {
+        aiaos_kernel_memory_e820_entry *entry = &AIAOS_KERNEL_MEMORY_E820_MAP_ADDRESS[i];
+        if (entry->type == 1)
+        {
+            aiaos_kernel_types_uint_to_hex(buf, entry->base, 16);
+            aiaos_kernel_vga_write_string("b:", 10 + (int)eh820_usable_count, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 3 + 1, AIAOS_KERNEL_VGA_COLOR_GREEN);
+            aiaos_kernel_vga_write_string(buf, 10 + (int)eh820_usable_count, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 3 + 1 + 3, AIAOS_KERNEL_VGA_COLOR_GREEN);
+
+            aiaos_kernel_types_ultoa(entry->length, buf);
+            aiaos_kernel_vga_write_string("l_kb:", 10 + (int)eh820_usable_count, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 3 + 1 + 20, AIAOS_KERNEL_VGA_COLOR_GREEN);
+            aiaos_kernel_vga_write_string(buf, 10 + (int)eh820_usable_count, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 3 + 1 + 20 + 6, AIAOS_KERNEL_VGA_COLOR_GREEN);
+
+            eh820_usable_count++;
+        }
+    }
+    aiaos_kernel_types_ultoa(eh820_usable_count, buf);
+    aiaos_kernel_vga_write_string("EH820  Usable:", 9, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 2, AIAOS_KERNEL_VGA_COLOR_GREEN);
+    aiaos_kernel_vga_write_string(buf, 9, (AIAOS_KERNEL_VGA_COLUMNS_NUM / 2) - 2 + 15, AIAOS_KERNEL_VGA_COLOR_GREEN);
 
     /* Footer */
     aiaos_kernel_vga_write_string("https://github.com/nickscha/aiaos", 23, aiaos_logo_long_col_offset, AIAOS_KERNEL_VGA_COLOR_GREEN);
