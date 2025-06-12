@@ -37,16 +37,25 @@ void _start_kernel(void)
     aiaos_kernel_vga_write_string("Application is an operating system", aiaos_logo_row_offset + 1, aiaos_logo_long_col_offset, AIAOS_KERNEL_VGA_COLOR_GREEN);
 
     /* General Information */
-    aiaos_kernel_vga_write_string("> Version: 0.1", 8, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
-    aiaos_kernel_vga_write_string("> Hello from 64bit AIAOS C89 Kernel", 9, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
+    aiaos_kernel_vga_write_string("> Info: x86_64 (64bit) v0.1", 8, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
+    aiaos_kernel_vga_write_string("> Hello from AIAOS C89 Kernel", 9, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
 
     /* Available Memory Infomration */
-    aiaos_kernel_vga_write_string(">   Memory Base:", 10, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
-    aiaos_kernel_vga_write_string((char *)aiaos_kernel_types_ptr_to_string(aiaos_kernel_memory), 10, 17, aiaos_kernel_vga_make_color(AIAOS_KERNEL_VGA_COLOR_WHITE, AIAOS_KERNEL_VGA_COLOR_GREEN));
+    aiaos_kernel_vga_write_string("> Memory  Base:", 10, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
+    aiaos_kernel_vga_write_string((char *)aiaos_kernel_types_ptr_to_string(aiaos_kernel_memory), 10, 16, aiaos_kernel_vga_make_color(AIAOS_KERNEL_VGA_COLOR_WHITE, AIAOS_KERNEL_VGA_COLOR_GREEN));
 
     aiaos_kernel_types_ultoa(aiaos_kernel_memory_size, buf);
-    aiaos_kernel_vga_write_string(">   Memory Size:", 11, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
-    aiaos_kernel_vga_write_string(buf, 11, 17, AIAOS_KERNEL_VGA_COLOR_GREEN);
+    aiaos_kernel_vga_write_string("> Memory  Size:", 11, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
+    aiaos_kernel_vga_write_string(buf, 11, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
+
+    aiaos_kernel_types_uint_to_hex(buf, (unsigned long) aiaos_kernel_memory - AIAOS_KERNEL_MEMORY_OFFSET, 16);
+    aiaos_kernel_vga_write_string("> Memory Start:", 12, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
+    aiaos_kernel_vga_write_string(buf, 12, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
+
+    aiaos_kernel_types_uint_to_hex(buf, AIAOS_KERNEL_MEMORY_OFFSET, 16);
+    aiaos_kernel_vga_write_string(">   Stack Base:", 13, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
+    aiaos_kernel_vga_write_string(buf, 13, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
+
 
     /* Vertical divider */
     for (i = 0; i < 14; ++i)
