@@ -10,9 +10,9 @@ typedef struct aiaos_kernel_memory_e820_entry
 } aiaos_kernel_memory_e820_entry;
 
 /* aiaos_linker.ld variables for memory addresses */
-extern char _stack_top;                              /* Stack top address as specified in aiaios_linker.ld*/
 extern unsigned int _e820_entry_count;               /* E820 entry count as specified in aiaios_linker.ld*/
 extern aiaos_kernel_memory_e820_entry _e820_address; /* E820 entry start memory address as specified in aiaios_linker.ld*/
+extern char _stack_top;                              /* Stack top address as specified in aiaios_linker.ld*/
 
 #define AIAOS_KERNEL_MEMORY_E820_MAP_COUNT ((int)_e820_entry_count)
 #define AIAOS_KERNEL_MEMORY_E820_MAP_ADDRESS ((aiaos_kernel_memory_e820_entry *)&_e820_address)
