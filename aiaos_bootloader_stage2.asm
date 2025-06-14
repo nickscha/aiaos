@@ -2,13 +2,16 @@
 
     [bits 16]
 
+    extern _e820_entry_count
+    extern _e820_address
+
     mov bx, stage2_msg
     call print_string16
 
     memmap_entry_size    equ 24
     memmap_max_entries   equ 32
-    memmap_entry_count   equ 0x6000        ; safer separate location for count
-    memmap_addr          equ 0x6020        ; entries start here        
+    memmap_entry_count   equ _e820_entry_count    ; coming from linker.ld: safer separate location for count
+    memmap_addr          equ _e820_address        ; coming from linker.ld: entries start here        
 
     call get_memory_map
 
