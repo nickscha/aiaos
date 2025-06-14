@@ -2,9 +2,9 @@
 
 MEMORY
 {
-    boot_sector (rwx) :  ORIGIN = 0x7c00,  LENGTH = 512
-    stage2 (rwx) :       ORIGIN = 0x07e00, LENGTH = 0x02000
-    kernel (rwx) :       ORIGIN = 0x09e00, LENGTH = 0x10000
+    boot_sector (rwx) :  ORIGIN = 0x7c00,  LENGTH = 0x000200
+    stage2 (rwx) :       ORIGIN = 0x07e00, LENGTH = 0x002000
+    kernel (rwx) :       ORIGIN = 0x09e00, LENGTH = 0x010000
 
     /* 2MB stack memory placed after kernel. (0x9e00 + 0x10000 = 0x19e00)  (end region: 0x19e00 + 0x200000 = 0x219e00) */
     stack_memory (rwx) : ORIGIN = 0x19e00, LENGTH = 0x200000
