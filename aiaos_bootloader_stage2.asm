@@ -89,6 +89,7 @@
 
     [bits 32]
 
+extern _paging_structures_start
 start_prot_mode:
     ;; Old segments are now meaningless
     mov ax, DATA_SEG32
@@ -102,7 +103,7 @@ start_prot_mode:
     call print_string32
 
     ;; Build 4 level page table and switch to long mode   
-    mov ebx, 0x1000
+    mov ebx, _paging_structures_start
     call build_page_table
     mov cr3, ebx            ; MMU finds the PML4 table in cr3
 
