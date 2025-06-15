@@ -2,7 +2,7 @@
 
 MEMORY
 {
-    boot_sector (rwx) :  ORIGIN = 0x7c00,  LENGTH = 0x000200
+    boot_sector (rwx) :  ORIGIN = 0x07c00, LENGTH = 0x000200
     stage2 (rwx) :       ORIGIN = 0x07e00, LENGTH = 0x002000
     kernel (rwx) :       ORIGIN = 0x09e00, LENGTH = 0x010000
 
