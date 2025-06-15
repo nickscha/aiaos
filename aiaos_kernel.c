@@ -22,12 +22,12 @@ void _start_kernel(void)
     int i;
     unsigned long eh820_usable_count = 0;
 
+    aiaos_kernel_vga_clear_screen();
+
     aiaos_kernel_memory_initialize();
 
-    /* Zero 12 MB memory */
+    /* Zero memory */
     aiaos_kernel_memory_zero(aiaos_kernel_memory, aiaos_kernel_memory_size);
-
-    aiaos_kernel_vga_clear_screen();
 
     /* Logo and Header Text */
     aiaos_kernel_vga_write_string("   _   _   _   _   _", aiaos_logo_row_offset++, aiaos_logo_col_offset, AIAOS_KERNEL_VGA_COLOR_GREEN);
