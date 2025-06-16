@@ -1,6 +1,6 @@
-    section .stage2
+section .stage2
 
-    [bits 16]
+[bits 16]
 
     extern _e820_entry_count
     extern _e820_address
@@ -90,9 +90,10 @@
         pop ax
         ret
 
-    [bits 32]
+[bits 32]
 
 extern _paging_structures_start
+
 start_prot_mode:
     ;; Old segments are now meaningless
     mov ax, DATA_SEG32
@@ -218,7 +219,7 @@ build_page_table:
     popa
     ret
 
-    [bits 64]
+[bits 64]
 extern _stack_top ;  _stack_top comes from aiaos_linker.ld
 
 start_long_mode:
