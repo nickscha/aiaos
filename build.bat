@@ -16,4 +16,4 @@ x86_64-elf-ld -T aiaos_linker.ld -o aiaos_linker.o aiaos_bootloader_stage1.s.o a
 x86_64-elf-objcopy -O binary aiaos_linker.o aiaos.img
 
 REM Run QEMU
-qemu-system-x86_64 -m 16m -no-reboot -drive file=aiaos.img,format=raw,index=0,media=disk
+qemu-system-x86_64 -m 6g -no-reboot -drive file=aiaos.img,format=raw,index=0,media=disk
