@@ -18,10 +18,22 @@ void aiaos_kernel_memory_initialize(void)
 
 void aiaos_kernel_memory_zero(void *ptr, unsigned long size)
 {
-    unsigned char *p = (unsigned char *)ptr;
-    while (size--)
+    unsigned long num_qwords = size / 8;
+    unsigned long remainder = size % 8;
+
+    __asm__ __volatile__(
+        "rep stosq"
+        : "+D"(ptr), "+c"(num_qwords)
+        : "a"(0)
+        : "memory");
+
+    if (remainder > 0)
     {
-        *p++ = 0;
+        unsigned char *p8 = (unsigned char *)ptr;
+        while (remainder--)
+        {
+            *p8++ = 0;
+        }
     }
 }
 
