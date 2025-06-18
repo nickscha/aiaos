@@ -51,7 +51,7 @@ void aiaos_kernel_memory_zero(void *ptr, unsigned long size)
         remainder = chunk_size % 8;
         chunk_ptr = (void *)chunk_start;
 
-        __asm__ __volatile__(
+        __asm __volatile(
             "rep stosq"
             : "+D"(chunk_ptr), "+c"(num_qwords)
             : "a"(0)

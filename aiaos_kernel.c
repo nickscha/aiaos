@@ -12,6 +12,24 @@ LICENSE
 #include "aiaos_kernel_memory.h"
 #include "aiaos_kernel_vga.h"
 
+typedef struct aiaos_perf_type_llu
+{
+  unsigned long low_part;
+  unsigned long high_part;
+} aiaos_perf_type_llu;
+
+double aiaos_perf_type_llu_to_double(aiaos_perf_type_llu a)
+{
+  return ((double)a.high_part * 4294967296.0 + (double)a.low_part);
+}
+
+unsigned long aiaos_perf_rdtsc(void)
+{
+  aiaos_perf_type_llu rdtsc_value = {0};
+  __asm __volatile("rdtsc" : "=a"(rdtsc_value.low_part), "=d"(rdtsc_value.high_part));
+  return ((unsigned long)aiaos_perf_type_llu_to_double(rdtsc_value));
+}
+
 void _start_kernel(void)
 {
   int aiaos_logo_length = 23;
@@ -20,12 +38,25 @@ void _start_kernel(void)
   int aiaos_logo_long_col_offset = (AIAOS_KERNEL_VGA_COLUMNS_NUM - 34) / 2;
   char buf[31];
   int i;
+  unsigned long vgaclear_cpu_cycles_start;
+  unsigned long vgaclear_cpu_cycles_end;
+  unsigned long meminit_cpu_cycles_start;
+  unsigned long meminit_cpu_cycles_end;
+  unsigned long memzero_cpu_cycles_start;
+  unsigned long memzero_cpu_cycles_end;
 
+  meminit_cpu_cycles_start = aiaos_perf_rdtsc();
   aiaos_kernel_memory_initialize();
+  meminit_cpu_cycles_end = aiaos_perf_rdtsc();
 
+  vgaclear_cpu_cycles_start = aiaos_perf_rdtsc();
   aiaos_kernel_vga_clear_screen();
+  vgaclear_cpu_cycles_end = aiaos_perf_rdtsc();
+
   aiaos_kernel_vga_write_string("[mem] zero all memory started", 0, 0, AIAOS_KERNEL_VGA_COLOR_WHITE);
+  memzero_cpu_cycles_start = aiaos_perf_rdtsc();
   aiaos_kernel_memory_zero(aiaos_kernel_memory, aiaos_kernel_memory_size);
+  memzero_cpu_cycles_end = aiaos_perf_rdtsc();
   aiaos_kernel_vga_clear_screen_row(0);
   aiaos_kernel_vga_write_string("[mem] zero all memory finish", 0, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
 
@@ -51,6 +82,18 @@ void _start_kernel(void)
   aiaos_kernel_types_uint_to_hex(buf, AIAOS_KERNEL_MEMORY_OFFSET, 16);
   aiaos_kernel_vga_write_string(">   Stack Base:", 12, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
   aiaos_kernel_vga_write_string(buf, 12, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
+
+  aiaos_kernel_types_ultoa(memzero_cpu_cycles_end - memzero_cpu_cycles_start, buf);
+  aiaos_kernel_vga_write_string("> Memz. Cycles:", 13, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_kernel_vga_write_string(buf, 13, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
+
+  aiaos_kernel_types_ultoa(vgaclear_cpu_cycles_end - vgaclear_cpu_cycles_start, buf);
+  aiaos_kernel_vga_write_string("> VGAc. Cycles:", 14, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_kernel_vga_write_string(buf, 14, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
+
+  aiaos_kernel_types_ultoa(meminit_cpu_cycles_end - meminit_cpu_cycles_start, buf);
+  aiaos_kernel_vga_write_string("> Memi. Cycles:", 15, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_kernel_vga_write_string(buf, 15, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
 
   /* Footer */
   aiaos_kernel_vga_write_string("https://github.com/nickscha/aiaos", 23, aiaos_logo_long_col_offset, AIAOS_KERNEL_VGA_COLOR_GREEN);
