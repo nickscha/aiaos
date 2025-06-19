@@ -45,6 +45,8 @@ void _start_kernel(void)
   unsigned long meminit_cpu_cycles_end;
   unsigned long memzero_cpu_cycles_start;
   unsigned long memzero_cpu_cycles_end;
+  unsigned long stack_total;
+  unsigned int stack_usage;
 
   meminit_cpu_cycles_start = aiaos_perf_rdtsc();
   aiaos_kernel_memory_initialize();
@@ -116,6 +118,17 @@ void _start_kernel(void)
     aiaos_kernel_types_uint_to_hex(buf, d.device_id, 6);
     aiaos_kernel_vga_write_string(buf, 11 + i, 40 + 8, AIAOS_KERNEL_VGA_COLOR_GREEN);
   }
+
+  /* Stack usage */
+  stack_total = AIAOS_KERNEL_STACK_SIZE;
+  aiaos_kernel_types_ultoa(stack_total, buf);
+  aiaos_kernel_vga_write_string(">  Stack total:", 17, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_kernel_vga_write_string(buf, 17, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
+
+  stack_usage = aiaos_kernel_memory_stack_usage();
+  aiaos_kernel_types_ultoa(stack_usage, buf);
+  aiaos_kernel_vga_write_string(">   Stack used:", 18, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_kernel_vga_write_string(buf, 18, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
 
   /* Footer */
   aiaos_kernel_vga_write_string("https://github.com/nickscha/aiaos", 23, aiaos_logo_long_col_offset, AIAOS_KERNEL_VGA_COLOR_GREEN);

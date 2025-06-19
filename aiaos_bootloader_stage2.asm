@@ -241,7 +241,8 @@ pop ecx
 ret
 
 [bits 64]
-extern _stack_top ;  _stack_top comes from aiaos_linker.ld
+extern _stack_bottom ; _stack_bottom comes from aiaos_linker.ld
+extern _stack_top    ; _stack_top comes from aiaos_linker.ld
 
 start_long_mode:
     mov ebx, long_mode_msg

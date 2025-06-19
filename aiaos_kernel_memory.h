@@ -2,10 +2,12 @@
 #define AIAOS_KERNEL_MEMORY_H
 
 /* aiaos_linker.ld variables for memory addresses */
+extern char _stack_bottom; /* Stack bottom address as specified in aiaios_linker.ld*/
 extern char _stack_top; /* Stack top address as specified in aiaios_linker.ld*/
 extern unsigned long MEM_TOTAL;
 
 #define AIAOS_KERNEL_MEMORY_OFFSET ((unsigned long)&_stack_top) /* Stack Offset. See aiaos_linker.ld */
+#define AIAOS_KERNEL_STACK_SIZE ((unsigned long)&_stack_top - (unsigned long)&_stack_bottom) /* Stack Offset. See aiaos_linker.ld */
 
 static void *aiaos_kernel_memory = 0;
 static unsigned long aiaos_kernel_memory_size = 0;
@@ -73,6 +75,18 @@ void aiaos_kernel_memory_zero(void *ptr, unsigned long size)
             current = PCIE_MMIO_RESERVED_END + 1;
         }
     }
+}
+
+unsigned int aiaos_kernel_memory_get_esp(void)
+{
+    unsigned int esp;
+    __asm __volatile("mov %%esp, %0" : "=r"(esp));
+    return esp;
+}
+
+unsigned int aiaos_kernel_memory_stack_usage(void)
+{
+    return (unsigned int)AIAOS_KERNEL_MEMORY_OFFSET - aiaos_kernel_memory_get_esp();
 }
 
 #endif /* AIAOS_KERNEL_MEMORY_H */
