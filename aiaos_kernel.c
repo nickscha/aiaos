@@ -11,6 +11,7 @@ LICENSE
 #include "aiaos_kernel_types.h"
 #include "aiaos_kernel_memory.h"
 #include "aiaos_kernel_vga.h"
+#include "aiaos_pci.h"
 
 typedef struct aiaos_perf_type_llu
 {
@@ -60,6 +61,8 @@ void _start_kernel(void)
   aiaos_kernel_vga_clear_screen_row(0);
   aiaos_kernel_vga_write_string("[mem] zero all memory finish", 0, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
 
+  aiaos_pci_init();
+
   /* Logo and Header Text */
   aiaos_kernel_vga_write_string("   _   _   _   _   _", aiaos_logo_row_offset++, aiaos_logo_col_offset, AIAOS_KERNEL_VGA_COLOR_GREEN);
   aiaos_kernel_vga_write_string("  / \\ / \\ / \\ / \\ / \\", aiaos_logo_row_offset++, aiaos_logo_col_offset, AIAOS_KERNEL_VGA_COLOR_GREEN);
@@ -94,6 +97,25 @@ void _start_kernel(void)
   aiaos_kernel_types_ultoa(meminit_cpu_cycles_end - meminit_cpu_cycles_start, buf);
   aiaos_kernel_vga_write_string("> Memi. Cycles:", 15, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
   aiaos_kernel_vga_write_string(buf, 15, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
+
+  aiaos_kernel_types_ultoa(aiaos_pci_devices_count, buf);
+  aiaos_kernel_vga_write_string(">  PCI devices:", 16, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_kernel_vga_write_string(buf, 16, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
+
+  /* PCI Devices */
+  aiaos_kernel_vga_write_string("PCI Device List:", 8, 40, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_kernel_vga_write_string("vid     did", 9, 40, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_kernel_vga_write_string("--------------", 10, 40, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  for (i = 0; i < (int)aiaos_pci_devices_count; ++i)
+  {
+    aiaos_pci_device d = aiaos_pci_devices[i];
+
+    aiaos_kernel_types_uint_to_hex(buf, d.vendor_id, 6);
+    aiaos_kernel_vga_write_string(buf, 11 + i, 40, AIAOS_KERNEL_VGA_COLOR_GREEN);
+
+    aiaos_kernel_types_uint_to_hex(buf, d.device_id, 6);
+    aiaos_kernel_vga_write_string(buf, 11 + i, 40 + 8, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  }
 
   /* Footer */
   aiaos_kernel_vga_write_string("https://github.com/nickscha/aiaos", 23, aiaos_logo_long_col_offset, AIAOS_KERNEL_VGA_COLOR_GREEN);
