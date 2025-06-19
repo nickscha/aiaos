@@ -31,4 +31,9 @@ SECTIONS
         . = ORIGIN(stack_memory) + LENGTH(stack_memory); /* . (location counter) is set to the end of the stack region (top of stack) */
         _stack_top = .;                                  /* _stack_top points to the address where RSP should be initialized */
     } > stack_memory
+
+    /DISCARD/ : {
+        *(.eh_frame)
+        *(.note .note.*)
+    }
 }
