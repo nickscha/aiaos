@@ -247,22 +247,6 @@ start_long_mode:
     mov ebx, long_mode_msg
     call print_string64
 
-    ; print MEM_TOTAL as a 16 digit 64-bit hex number
-    mov rdi,0xb8000 ; color text mode buf
-    mov rdx,[MEM_TOTAL]
-    mov rcx,16
-    printloop:
-    mov rax,rdx
-    rol rax,4 ; most significant digits first
-    and rax,0xF
-    add rax,HEXCHARS
-    mov rax,[rax]
-    stosb ; character
-    mov rax,0x1F
-    stosb ; colors
-    shl rdx,4
-    loop printloop
-
     ;; (1) Load a basic Interrupt Descriptor Table (IDT)
     call setup_idt64
     lidt [idt64_pointer]
