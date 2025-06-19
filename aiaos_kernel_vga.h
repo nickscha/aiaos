@@ -29,12 +29,12 @@ typedef enum aiaos_kernel_vga_color
 
 } aiaos_kernel_vga_color;
 
-char aiaos_kernel_vga_make_color(aiaos_kernel_vga_color foreground, aiaos_kernel_vga_color background)
+static char aiaos_kernel_vga_make_color(aiaos_kernel_vga_color foreground, aiaos_kernel_vga_color background)
 {
     return (char)(foreground | background << 4);
 }
 
-void aiaos_kernel_vga_clear_screen(void)
+static void aiaos_kernel_vga_clear_screen(void)
 {
     int i;
 
@@ -44,7 +44,7 @@ void aiaos_kernel_vga_clear_screen(void)
     }
 }
 
-void aiaos_kernel_vga_clear_screen_row(int row)
+static void aiaos_kernel_vga_clear_screen_row(int row)
 {
     int i;
 
@@ -59,7 +59,7 @@ void aiaos_kernel_vga_clear_screen_row(int row)
     }
 }
 
-void aiaos_kernel_vga_write_string(const char *str, int row_offset, int col_offset, char color)
+static void aiaos_kernel_vga_write_string(const char *str, int row_offset, int col_offset, char color)
 {
     int offset;
     int i = 0;

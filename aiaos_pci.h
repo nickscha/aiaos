@@ -95,6 +95,7 @@ static void aiaos_pci_init(void)
 
                     data = aiaos_pci_config_read32(bus, device, function, 0x00);
                     vendor_id = (unsigned short)(data & 0xFFFF);
+                    
                     if (vendor_id == 0xFFFF)
                     {
                         continue;

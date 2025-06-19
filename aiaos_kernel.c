@@ -19,12 +19,12 @@ typedef struct aiaos_perf_type_llu
   unsigned long high_part;
 } aiaos_perf_type_llu;
 
-double aiaos_perf_type_llu_to_double(aiaos_perf_type_llu a)
+static double aiaos_perf_type_llu_to_double(aiaos_perf_type_llu a)
 {
   return ((double)a.high_part * 4294967296.0 + (double)a.low_part);
 }
 
-unsigned long aiaos_perf_rdtsc(void)
+static unsigned long aiaos_perf_rdtsc(void)
 {
   aiaos_perf_type_llu rdtsc_value = {0};
   __asm __volatile("rdtsc" : "=a"(rdtsc_value.low_part), "=d"(rdtsc_value.high_part));
@@ -46,7 +46,7 @@ void _start_kernel(void)
   unsigned long memzero_cpu_cycles_start;
   unsigned long memzero_cpu_cycles_end;
   unsigned long stack_total;
-  unsigned int stack_usage;
+  unsigned long stack_usage;
 
   meminit_cpu_cycles_start = aiaos_perf_rdtsc();
   aiaos_kernel_memory_initialize();

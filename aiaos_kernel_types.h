@@ -1,7 +1,7 @@
 #ifndef AIAOS_KERNEL_TYPES_H
 #define AIAOS_KERNEL_TYPES_H
 
-void aiaos_kernel_types_string_reverse(char *str, int len)
+static void aiaos_kernel_types_string_reverse(char *str, int len)
 {
     int i = 0;
     int j = len - 1;
@@ -29,7 +29,7 @@ static char *aiaos_kernel_types_uint_to_hex(char *buf, unsigned long val, int wi
     return buf + width;
 }
 
-void aiaos_kernel_types_ultoa(unsigned long value, char *buffer)
+static void aiaos_kernel_types_ultoa(unsigned long value, char *buffer)
 {
     int i = 0;
 
@@ -51,7 +51,7 @@ void aiaos_kernel_types_ultoa(unsigned long value, char *buffer)
     aiaos_kernel_types_string_reverse(buffer, i);
 }
 
-void *aiaos_kernel_types_ptr_to_string(void *ptr)
+static void *aiaos_kernel_types_ptr_to_string(void *ptr)
 {
     static char buffer[19]; /* "0x" + 16 hex digits + null terminator */
     unsigned long value = (unsigned long)(unsigned long *)ptr;
