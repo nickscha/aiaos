@@ -44,7 +44,7 @@ static void aiaos_kernel_vga_clear_screen(void)
     }
 }
 
-static void aiaos_kernel_vga_clear_screen_row(int row)
+void aiaos_kernel_vga_clear_screen_row(int row)
 {
     int i;
 

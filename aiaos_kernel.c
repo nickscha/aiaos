@@ -56,13 +56,6 @@ void _start_kernel(void)
   aiaos_kernel_vga_clear_screen();
   vgaclear_cpu_cycles_end = aiaos_perf_rdtsc();
 
-  aiaos_kernel_vga_write_string("[mem] zero all memory started", 0, 0, AIAOS_KERNEL_VGA_COLOR_WHITE);
-  memzero_cpu_cycles_start = aiaos_perf_rdtsc();
-  aiaos_kernel_memory_zero(aiaos_kernel_memory, aiaos_kernel_memory_size);
-  memzero_cpu_cycles_end = aiaos_perf_rdtsc();
-  aiaos_kernel_vga_clear_screen_row(0);
-  aiaos_kernel_vga_write_string("[mem] zero all memory finish", 0, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
-
   aiaos_pci_init();
 
   /* Logo and Header Text */
@@ -88,10 +81,6 @@ void _start_kernel(void)
   aiaos_kernel_vga_write_string(">   Stack Base:", 12, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
   aiaos_kernel_vga_write_string(buf, 12, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
 
-  aiaos_kernel_types_ultoa(memzero_cpu_cycles_end - memzero_cpu_cycles_start, buf);
-  aiaos_kernel_vga_write_string("> Memz. Cycles:", 13, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
-  aiaos_kernel_vga_write_string(buf, 13, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
-
   aiaos_kernel_types_ultoa(vgaclear_cpu_cycles_end - vgaclear_cpu_cycles_start, buf);
   aiaos_kernel_vga_write_string("> VGAc. Cycles:", 14, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
   aiaos_kernel_vga_write_string(buf, 14, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
@@ -100,14 +89,14 @@ void _start_kernel(void)
   aiaos_kernel_vga_write_string("> Memi. Cycles:", 15, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
   aiaos_kernel_vga_write_string(buf, 15, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
 
+  /* PCI Devices */
   aiaos_kernel_types_ultoa(aiaos_pci_devices_count, buf);
   aiaos_kernel_vga_write_string(">  PCI devices:", 16, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
   aiaos_kernel_vga_write_string(buf, 16, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
-
-  /* PCI Devices */
   aiaos_kernel_vga_write_string("PCI Device List:", 8, 40, AIAOS_KERNEL_VGA_COLOR_GREEN);
   aiaos_kernel_vga_write_string("ven_id  dev_id", 9, 40, AIAOS_KERNEL_VGA_COLOR_GREEN);
   aiaos_kernel_vga_write_string("--------------", 10, 40, AIAOS_KERNEL_VGA_COLOR_GREEN);
+
   for (i = 0; i < (int)aiaos_pci_devices_count; ++i)
   {
     aiaos_pci_device d = aiaos_pci_devices[i];
@@ -138,6 +127,17 @@ void _start_kernel(void)
     aiaos_kernel_vga_color color = (aiaos_kernel_vga_color)i;
     aiaos_kernel_vga_write_string("#", 24, i, aiaos_kernel_vga_make_color(color, color));
   }
+
+  /* After printing basic information zero all memory */
+  aiaos_kernel_vga_write_string("[mem] zero all memory started", 0, 0, AIAOS_KERNEL_VGA_COLOR_WHITE);
+  memzero_cpu_cycles_start = aiaos_perf_rdtsc();
+  aiaos_kernel_memory_zero(aiaos_kernel_memory, aiaos_kernel_memory_size);
+  memzero_cpu_cycles_end = aiaos_perf_rdtsc();
+  aiaos_kernel_vga_write_string("[mem] zero all memory finish ", 0, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
+
+  aiaos_kernel_types_ultoa(memzero_cpu_cycles_end - memzero_cpu_cycles_start, buf);
+  aiaos_kernel_vga_write_string("> Memz. Cycles:", 13, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_kernel_vga_write_string(buf, 13, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
 }
 
 /*
