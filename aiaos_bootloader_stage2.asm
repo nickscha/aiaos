@@ -251,13 +251,34 @@ start_long_mode:
     call setup_idt64
     lidt [idt64_pointer]
 
-    ;; (2) Enable SSE/XMM support
+    ;; (2) Enable SSE/XMM/AVX support
     mov   rax, cr0
     and   rax, ~(1<<2)     ; clear EM
     mov   cr0, rax
     mov   rax, cr4
     or    rax, 1<<9        ; set OSFXSR
     mov   cr4, rax
+
+    ;; Check if CPU supports AVX and OSXSAVE using CPUID
+    mov     eax, 1
+    cpuid
+    test    ecx, (1 << 27)       ; Check OSXSAVE
+    jz      .no_avx              ; Skip if not supported
+    test    ecx, (1 << 28)       ; Check AVX support
+    jz      .no_avx              ; Skip if not supported
+
+    ;; Enable OSXSAVE in CR4
+    mov     rax, cr4
+    or      rax, (1 << 18)       ; Set OSXSAVE
+    mov     cr4, rax
+
+    ;; Enable XMM (bit 1) and YMM (bit 2) in XCR0 using XSETBV
+    mov     ecx, 0               ; XCR0
+    xor     edx, edx
+    mov     eax, (1 << 1) | (1 << 2) ; XMM + YMM
+    xsetbv
+
+.no_avx:
 
     ;; (3) Set Stack Address
     mov   rsp, _stack_top ; Use the aligned stack top defined by the linker
