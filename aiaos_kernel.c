@@ -106,7 +106,7 @@ void _start_kernel(void)
 
   /* PCI Devices */
   aiaos_kernel_vga_write_string("PCI Device List:", 8, 40, AIAOS_KERNEL_VGA_COLOR_GREEN);
-  aiaos_kernel_vga_write_string("vid     did", 9, 40, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_kernel_vga_write_string("ven_id  dev_id", 9, 40, AIAOS_KERNEL_VGA_COLOR_GREEN);
   aiaos_kernel_vga_write_string("--------------", 10, 40, AIAOS_KERNEL_VGA_COLOR_GREEN);
   for (i = 0; i < (int)aiaos_pci_devices_count; ++i)
   {
