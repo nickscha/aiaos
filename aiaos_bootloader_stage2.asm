@@ -151,7 +151,8 @@ start_prot_mode:
     push edx
     mov eax,0x83 ; R/W, P, PS
     xor ebx,ebx
-    pdloop:
+    
+pdloop:
     stosd
     xchg eax,ebx
     stosd
@@ -192,13 +193,6 @@ end:
     hlt
     jmp end
 
-; write ecx*2 zero dwords at edi
-zerorest:
-xor eax,eax
-shl ecx,1
-rep stosd
-ret
-
 ; set up page table entries that point to the next table
 ; inputs:
 ;   edi = pointer to 4KiB aligned memory where the table will be written
@@ -212,33 +206,41 @@ ret
 ;   ecx = number of entries in this table (not rounded up)
 ;   edx = number of entries in this table (rounded up to 512)
 do_pages:
-; num of pages in this table, rounded up
-shr edx,9
-add edx,0x1FF
-and edx,~0x1FF
+    ; num of pages in this table, rounded up
+    shr edx,9
+    add edx,0x1FF
+    and edx,~0x1FF
 
-; num of pages in this table, not rounded
-add ecx,0x1FF
-shr ecx,9
+    ; num of pages in this table, not rounded
+    add ecx,0x1FF
+    shr ecx,9
 
-push ecx
-push edx
-mov eax,ebp ; start at last table
-mov ebp,edi ; save address of this table for later
-or eax,3 ; R/W, P
+    push ecx
+    push edx
+    mov eax,ebp ; start at last table
+    mov ebp,edi ; save address of this table for later
+    or eax,3 ; R/W, P
+
 pages_loop:
-stosd
-xchg eax,ebx
-stosd ; zero
-xchg eax,ebx
-add eax,0x1000 ; step by 512*8 bytes (one table)
-dec edx
-loop pages_loop
-mov ecx,edx
-call zerorest
-pop edx
-pop ecx
-ret
+    stosd
+    xchg eax,ebx
+    stosd ; zero
+    xchg eax,ebx
+    add eax,0x1000 ; step by 512*8 bytes (one table)
+    dec edx
+    loop pages_loop
+    mov ecx,edx
+    call zerorest
+    pop edx
+    pop ecx
+    ret
+
+; write ecx*2 zero dwords at edi
+zerorest:
+    xor eax,eax
+    shl ecx,1
+    rep stosd
+    ret
 
 [bits 64]
 extern _stack_bottom ; _stack_bottom comes from aiaos_linker.ld
