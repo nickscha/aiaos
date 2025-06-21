@@ -78,6 +78,4 @@ x86_64-elf-objcopy --version
 ## TODO
 
 - custom x86_64 assembler integration via las
-- upper half kernel
-- FAT filesystem
 - NIC stack
