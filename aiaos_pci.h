@@ -52,70 +52,44 @@ static unsigned long aiaos_pci_config_read32(unsigned char bus, unsigned char de
 
 static void aiaos_pci_init(void)
 {
-    unsigned char bus, device;
+    unsigned char bus;
+    unsigned char device;
+    unsigned char function;
 
     for (bus = 0; bus < PCI_MAX_BUS; ++bus)
     {
         for (device = 0; device < PCI_MAX_DEVICE; ++device)
         {
-            unsigned long data = aiaos_pci_config_read32((unsigned char)bus, (unsigned char)device, 0, 0x00);
-            unsigned long class_info;
-            unsigned char function = 0;
-            unsigned short vendor_id = (unsigned short)(data & 0xFFFF);
-            unsigned short device_id;
-            unsigned char header_type;
-            aiaos_pci_device current_device;
-
-            if (vendor_id == 0xFFFF)
+            for (function = 0; function < PCI_MAX_FUNCTION; ++function)
             {
-                continue;
-            }
 
-            device_id = (unsigned short)((data >> 16) & 0xFFFF);
-            class_info = aiaos_pci_config_read32((unsigned char)bus, (unsigned char)device, 0, 0x08);
-            header_type = (unsigned char)((aiaos_pci_config_read32(bus, device, 0, 0x0C) >> 16) & 0xFF);
+                unsigned long data = aiaos_pci_config_read32(bus, device, function, 0x00);
+                unsigned long class_info;
+                unsigned short vendor_id = (unsigned short)(data & 0xFFFF);
+                unsigned short device_id;
+                unsigned char header_type;
+                aiaos_pci_device current_device;
 
-            current_device.bus = bus;
-            current_device.device = device;
-            current_device.function = function;
-            current_device.vendor_id = vendor_id;
-            current_device.device_id = device_id;
-            current_device.class_code = (unsigned char)((class_info >> 24) & 0xFF);
-            current_device.subclass = (unsigned char)((class_info >> 16) & 0xFF);
-            current_device.prog_if = (unsigned char)((class_info >> 8) & 0xFF);
-            current_device.header_type = header_type;
-
-            aiaos_pci_devices[aiaos_pci_devices_count++] = current_device;
-
-            if ((header_type & 0x80) != 0)
-            {
-                for (function = 1; function < PCI_MAX_FUNCTION; ++function)
+                if (vendor_id == 0xFFFF)
                 {
-                    aiaos_pci_device sub_device;
-
-                    data = aiaos_pci_config_read32(bus, device, function, 0x00);
-                    vendor_id = (unsigned short)(data & 0xFFFF);
-                    
-                    if (vendor_id == 0xFFFF)
-                    {
-                        continue;
-                    }
-
-                    device_id = (unsigned short)((data >> 16) & 0xFFFF);
-                    class_info = aiaos_pci_config_read32(bus, device, function, 0x08);
-                    header_type = (unsigned char)((aiaos_pci_config_read32(bus, device, function, 0x0C) >> 16) & 0xFF);
-
-                    sub_device.bus = bus;
-                    sub_device.device = device;
-                    sub_device.function = function;
-                    sub_device.vendor_id = vendor_id;
-                    sub_device.device_id = device_id;
-                    sub_device.class_code = (unsigned char)((class_info >> 24) & 0xFF);
-                    sub_device.subclass = (unsigned char)((class_info >> 16) & 0xFF);
-                    sub_device.prog_if = (unsigned char)((class_info >> 8) & 0xFF);
-                    sub_device.header_type = header_type;
-                    aiaos_pci_devices[aiaos_pci_devices_count++] = sub_device;
+                    continue;
                 }
+
+                device_id = (unsigned short)((data >> 16) & 0xFFFF);
+                class_info = aiaos_pci_config_read32(bus, device, function, 0x08);
+                header_type = (unsigned char)((aiaos_pci_config_read32(bus, device, function, 0x0C) >> 16) & 0xFF);
+
+                current_device.bus = bus;
+                current_device.device = device;
+                current_device.function = function;
+                current_device.vendor_id = vendor_id;
+                current_device.device_id = device_id;
+                current_device.class_code = (unsigned char)((class_info >> 24) & 0xFF);
+                current_device.subclass = (unsigned char)((class_info >> 16) & 0xFF);
+                current_device.prog_if = (unsigned char)((class_info >> 8) & 0xFF);
+                current_device.header_type = header_type;
+
+                aiaos_pci_devices[aiaos_pci_devices_count++] = current_device;
             }
         }
     }
