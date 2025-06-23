@@ -13,6 +13,7 @@ MEMORY
 ENTRY(__start)
 SECTIONS
 {
+    _e820_entry_count        = 0x006000;
     _e820_address            = 0x006020;
     _paging_structures_start = 0x100000;
 

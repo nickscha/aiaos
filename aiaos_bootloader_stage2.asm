@@ -2,6 +2,7 @@ section .stage2
 
 [bits 16]
 
+    extern _e820_entry_count
     extern _e820_address
 
     mov bx, stage2_msg
