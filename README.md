@@ -46,7 +46,7 @@ Build x86_64-elf binutils for objcopy and ld linker command:
 git clone --depth 1 https://sourceware.org/git/binutils-gdb.git
 cd binutils-gdb
 ./configure --target=x86_64-elf --prefix=$HOME/opt/cross --disable-nls --disable-werror
-make -j8
+make -j$(nproc)
 make install
 cd ..
 ```
