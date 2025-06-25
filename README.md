@@ -74,8 +74,3 @@ x86_64-elf-gcc --version
 x86_64-elf-ld --version
 x86_64-elf-objcopy --version
 ```
-
-## TODO
-
-- custom x86_64 assembler integration via las
-- NIC stack
