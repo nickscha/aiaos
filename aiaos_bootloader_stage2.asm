@@ -22,8 +22,8 @@ section .stage2
     ; we don't really care about the lower 16 MiB other than the stuff that's already mapped
     mov ax,0xE801
     int 0x15
-    xor dh,dh ; just in case something is in the upper bits
-    shl edx,16 ; multiply by 64 KiB because it's 64 KiB blocks
+    xor dh,dh         ; just in case something is in the upper bits
+    shl edx,16        ; multiply by 64 KiB because it's 64 KiB blocks
     add edx,0x1000000 ; add 16 MiB because it's above the 16 MiB mark
     mov [MEM_TOTAL],edx
 
@@ -43,20 +43,20 @@ section .stage2
     ;   uint64 length
     ;   uint32 type
     mov ax,cs
-    mov es,ax ; make sure es segment is set up
+    mov es,ax            ; make sure es segment is set up
     mov ds,ax
 
     mov di,_e820_address ; buffer for region struct. save a few bytes by not storing this in our boot sector
-    xor ebx,ebx ; continuation value starts at zero
+    xor ebx,ebx          ; continuation value starts at zero
 
     query_mem_loop:
-    mov ecx,20 ; 20 bytes, minimum struct size
-    mov edx,'PAMS' ; SMAP reversed because of integer endian-ness
+    mov ecx,20           ; 20 bytes, minimum struct size
+    mov edx,'PAMS'       ; SMAP reversed because of integer endian-ness
     mov eax,0xE820
     int 0x15
-    jc query_mem_done ; error
+    jc query_mem_done    ; error
     cmp eax,'PAMS'
-    jne query_mem_done ; invalid map
+    jne query_mem_done   ; invalid map
     ; check type. 1 is available. if we don't ignore reserved regions we will map too much ram on
     ; < 4GiB systems because bios reports some reserved stuff up to 4 GiB
     cmp byte [di+16],1
@@ -147,7 +147,7 @@ start_prot_mode:
     and edx,~0x1FF
 
     ; PD: 2MiB pages identity-mapped to actual memory. eax:ebx used to track address
-    mov ebp,edi ; store PD pointer for later
+    mov ebp,edi  ; store PD pointer for later
     push ecx
     push edx
     mov eax,0x83 ; R/W, P, PS
@@ -167,7 +167,7 @@ pdloop:
     pop edx
     pop ecx
 
-    xor ebx,ebx ; using ebx as a zero value register to write zeros in do_pages
+    xor ebx,ebx   ; using ebx as a zero value register to write zeros in do_pages
     call do_pages ; PDP: 1GiB pages
     mov cr3,edi   ; set PML4 pointer
     call do_pages ; PML4: 512GiB pages
@@ -220,7 +220,7 @@ do_pages:
     push edx
     mov eax,ebp ; start at last table
     mov ebp,edi ; save address of this table for later
-    or eax,3 ; R/W, P
+    or eax,3    ; R/W, P
 
 pages_loop:
     stosd
@@ -301,10 +301,10 @@ end64:
 %include "aiaos_bootloader_stage2_gdt64.asm"
 %include "aiaos_bootloader_stage2_idt64.asm"
 
-stage2_msg: db "AIAOS stage 2", 13, 10, 0
+stage2_msg:    db "AIAOS stage 2", 13, 10, 0
 prot_mode_msg: db "AIAOS protected mode", 0
 long_mode_msg: db "AIAOS entering 64-bit mode", 0
 
 global MEM_TOTAL
 MEM_TOTAL: dq 0
-HEXCHARS: db '0123456789ABCDEF'
+HEXCHARS:  db '0123456789ABCDEF'
