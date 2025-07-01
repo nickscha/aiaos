@@ -1,7 +1,7 @@
 # aiaos
 
 <p align="center">
-<a href="https://nickscha.github.io/"><img src="aiaos.jpg"></a>
+<a href="https://nickscha.github.io/"><img src="assets/aiaos.jpg"></a>
 </p>
 
 A C89 nostdlib bare metal 64bit operating system with a custom bootloader.
@@ -16,7 +16,7 @@ The name **AIAOS** is a simplification and stands for "Application is an Operati
 On **Windows** just run the "**build.bat**" file which compiles and links the bootloader and kernel and creates an elf bootable image.
 
 <p align="center">
-<a href="https://nickscha.github.io/"><img src="aiaos_example.png"></a>
+<a href="https://nickscha.github.io/"><img src="assets/aiaos_example.png"></a>
 </p>
 
 ## Building Windows cross compilation setup
