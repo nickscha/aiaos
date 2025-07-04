@@ -10,8 +10,8 @@ LICENSE
 */
 #include "aiaos_kernel_types.h"
 #include "aiaos_kernel_memory.h"
-#include "aiaos_kernel_vga.h"
-#include "aiaos_pci.h"
+#include "drivers/aiaos_driver_vga.h"
+#include "drivers/aiaos_driver_pci.h"
 
 typedef struct aiaos_perf_type_llu
 {
@@ -34,9 +34,9 @@ static unsigned long aiaos_perf_rdtsc(void)
 void _start_kernel(void)
 {
   int aiaos_logo_length = 23;
-  int aiaos_logo_col_offset = (AIAOS_KERNEL_VGA_COLUMNS_NUM - aiaos_logo_length) / 2;
+  int aiaos_logo_col_offset = (AIAOS_DRIVER_VGA_COLUMNS_NUM - aiaos_logo_length) / 2;
   int aiaos_logo_row_offset = 0;
-  int aiaos_logo_long_col_offset = (AIAOS_KERNEL_VGA_COLUMNS_NUM - 34) / 2;
+  int aiaos_logo_long_col_offset = (AIAOS_DRIVER_VGA_COLUMNS_NUM - 34) / 2;
   char buf[31];
   int i;
   unsigned long vgaclear_cpu_cycles_start;
@@ -53,91 +53,91 @@ void _start_kernel(void)
   meminit_cpu_cycles_end = aiaos_perf_rdtsc();
 
   vgaclear_cpu_cycles_start = aiaos_perf_rdtsc();
-  aiaos_kernel_vga_clear_screen();
+  aiaos_driver_vga_clear_screen();
   vgaclear_cpu_cycles_end = aiaos_perf_rdtsc();
 
   aiaos_pci_init();
 
   /* Logo and Header Text */
-  aiaos_kernel_vga_write_string("   _   _   _   _   _", aiaos_logo_row_offset++, aiaos_logo_col_offset, AIAOS_KERNEL_VGA_COLOR_GREEN);
-  aiaos_kernel_vga_write_string("  / \\ / \\ / \\ / \\ / \\", aiaos_logo_row_offset++, aiaos_logo_col_offset, AIAOS_KERNEL_VGA_COLOR_GREEN);
-  aiaos_kernel_vga_write_string(" ( A | I | A | O | S )", aiaos_logo_row_offset++, aiaos_logo_col_offset, AIAOS_KERNEL_VGA_COLOR_GREEN);
-  aiaos_kernel_vga_write_string("  \\_/ \\_/ \\_/ \\_/ \\_/", aiaos_logo_row_offset++, aiaos_logo_col_offset, AIAOS_KERNEL_VGA_COLOR_GREEN);
-  aiaos_kernel_vga_write_string("Application is an operating system", aiaos_logo_row_offset + 1, aiaos_logo_long_col_offset, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string("   _   _   _   _   _", aiaos_logo_row_offset++, aiaos_logo_col_offset, AIAOS_DRIVER_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string("  / \\ / \\ / \\ / \\ / \\", aiaos_logo_row_offset++, aiaos_logo_col_offset, AIAOS_DRIVER_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string(" ( A | I | A | O | S )", aiaos_logo_row_offset++, aiaos_logo_col_offset, AIAOS_DRIVER_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string("  \\_/ \\_/ \\_/ \\_/ \\_/", aiaos_logo_row_offset++, aiaos_logo_col_offset, AIAOS_DRIVER_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string("Application is an operating system", aiaos_logo_row_offset + 1, aiaos_logo_long_col_offset, AIAOS_DRIVER_VGA_COLOR_GREEN);
 
   /* General Information */
-  aiaos_kernel_vga_write_string("> Info: x86_64 (64bit) v0.1", 8, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
-  aiaos_kernel_vga_write_string("> Hello from AIAOS C89 Kernel", 9, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string("> Info: x86_64 (64bit) v0.1", 8, 0, AIAOS_DRIVER_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string("> Hello from AIAOS C89 Kernel", 9, 0, AIAOS_DRIVER_VGA_COLOR_GREEN);
 
   /* Available Memory Infomration */
-  aiaos_kernel_vga_write_string("> Memory  Base:", 10, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
-  aiaos_kernel_vga_write_string((char *)aiaos_kernel_types_ptr_to_string(aiaos_kernel_memory), 10, 16, aiaos_kernel_vga_make_color(AIAOS_KERNEL_VGA_COLOR_WHITE, AIAOS_KERNEL_VGA_COLOR_GREEN));
+  aiaos_driver_vga_write_string("> Memory  Base:", 10, 0, AIAOS_DRIVER_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string((char *)aiaos_kernel_types_ptr_to_string(aiaos_kernel_memory), 10, 16, aiaos_driver_vga_make_color(AIAOS_DRIVER_VGA_COLOR_WHITE, AIAOS_DRIVER_VGA_COLOR_GREEN));
 
   aiaos_kernel_types_ultoa(aiaos_kernel_memory_size, buf);
-  aiaos_kernel_vga_write_string("> Memory  Size:", 11, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
-  aiaos_kernel_vga_write_string(buf, 11, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string("> Memory  Size:", 11, 0, AIAOS_DRIVER_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string(buf, 11, 16, AIAOS_DRIVER_VGA_COLOR_GREEN);
 
   aiaos_kernel_types_uint_to_hex(buf, AIAOS_KERNEL_MEMORY_OFFSET, 16);
-  aiaos_kernel_vga_write_string(">   Stack Base:", 12, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
-  aiaos_kernel_vga_write_string(buf, 12, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string(">   Stack Base:", 12, 0, AIAOS_DRIVER_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string(buf, 12, 16, AIAOS_DRIVER_VGA_COLOR_GREEN);
 
   aiaos_kernel_types_ultoa(vgaclear_cpu_cycles_end - vgaclear_cpu_cycles_start, buf);
-  aiaos_kernel_vga_write_string("> VGAc. Cycles:", 14, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
-  aiaos_kernel_vga_write_string(buf, 14, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string("> VGAc. Cycles:", 14, 0, AIAOS_DRIVER_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string(buf, 14, 16, AIAOS_DRIVER_VGA_COLOR_GREEN);
 
   aiaos_kernel_types_ultoa(meminit_cpu_cycles_end - meminit_cpu_cycles_start, buf);
-  aiaos_kernel_vga_write_string("> Memi. Cycles:", 15, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
-  aiaos_kernel_vga_write_string(buf, 15, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string("> Memi. Cycles:", 15, 0, AIAOS_DRIVER_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string(buf, 15, 16, AIAOS_DRIVER_VGA_COLOR_GREEN);
 
   /* PCI Devices */
-  aiaos_kernel_types_ultoa(aiaos_pci_devices_count, buf);
-  aiaos_kernel_vga_write_string(">  PCI devices:", 16, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
-  aiaos_kernel_vga_write_string(buf, 16, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
-  aiaos_kernel_vga_write_string("PCI Device List:", 8, 40, AIAOS_KERNEL_VGA_COLOR_GREEN);
-  aiaos_kernel_vga_write_string("ven_id  dev_id", 9, 40, AIAOS_KERNEL_VGA_COLOR_GREEN);
-  aiaos_kernel_vga_write_string("--------------", 10, 40, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_kernel_types_ultoa(aiaos_driver_pci_devices_count, buf);
+  aiaos_driver_vga_write_string(">  PCI devices:", 16, 0, AIAOS_DRIVER_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string(buf, 16, 16, AIAOS_DRIVER_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string("PCI Device List:", 8, 40, AIAOS_DRIVER_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string("ven_id  dev_id", 9, 40, AIAOS_DRIVER_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string("--------------", 10, 40, AIAOS_DRIVER_VGA_COLOR_GREEN);
 
-  for (i = 0; i < (int)aiaos_pci_devices_count; ++i)
+  for (i = 0; i < (int)aiaos_driver_pci_devices_count; ++i)
   {
-    aiaos_pci_device d = aiaos_pci_devices[i];
+    aiaos_driver_pci_device d = aiaos_driver_pci_devices[i];
 
     aiaos_kernel_types_uint_to_hex(buf, d.vendor_id, 6);
-    aiaos_kernel_vga_write_string(buf, 11 + i, 40, AIAOS_KERNEL_VGA_COLOR_GREEN);
+    aiaos_driver_vga_write_string(buf, 11 + i, 40, AIAOS_DRIVER_VGA_COLOR_GREEN);
 
     aiaos_kernel_types_uint_to_hex(buf, d.device_id, 6);
-    aiaos_kernel_vga_write_string(buf, 11 + i, 40 + 8, AIAOS_KERNEL_VGA_COLOR_GREEN);
+    aiaos_driver_vga_write_string(buf, 11 + i, 40 + 8, AIAOS_DRIVER_VGA_COLOR_GREEN);
   }
 
   /* Stack usage */
   stack_total = AIAOS_KERNEL_STACK_SIZE;
   aiaos_kernel_types_ultoa(stack_total, buf);
-  aiaos_kernel_vga_write_string(">  Stack total:", 17, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
-  aiaos_kernel_vga_write_string(buf, 17, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string(">  Stack total:", 17, 0, AIAOS_DRIVER_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string(buf, 17, 16, AIAOS_DRIVER_VGA_COLOR_GREEN);
 
   stack_usage = aiaos_kernel_memory_stack_usage();
   aiaos_kernel_types_ultoa(stack_usage, buf);
-  aiaos_kernel_vga_write_string(">   Stack used:", 18, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
-  aiaos_kernel_vga_write_string(buf, 18, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string(">   Stack used:", 18, 0, AIAOS_DRIVER_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string(buf, 18, 16, AIAOS_DRIVER_VGA_COLOR_GREEN);
 
   /* Footer */
-  aiaos_kernel_vga_write_string("https://github.com/nickscha/aiaos", 23, aiaos_logo_long_col_offset, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string("https://github.com/nickscha/aiaos", 23, aiaos_logo_long_col_offset, AIAOS_DRIVER_VGA_COLOR_GREEN);
 
-  for (i = 0; i < AIAOS_KERNEL_VGA_COLOR_COUNT; i++)
+  for (i = 0; i < AIAOS_DRIVER_VGA_COLOR_COUNT; i++)
   {
-    aiaos_kernel_vga_color color = (aiaos_kernel_vga_color)i;
-    aiaos_kernel_vga_write_string("#", 24, i, aiaos_kernel_vga_make_color(color, color));
+    aiaos_driver_vga_color color = (aiaos_driver_vga_color)i;
+    aiaos_driver_vga_write_string("#", 24, i, aiaos_driver_vga_make_color(color, color));
   }
 
   /* After printing basic information zero all memory */
-  aiaos_kernel_vga_write_string("[mem] zero all memory started", 0, 0, AIAOS_KERNEL_VGA_COLOR_WHITE);
+  aiaos_driver_vga_write_string("[mem] zero all memory started", 0, 0, AIAOS_DRIVER_VGA_COLOR_WHITE);
   memzero_cpu_cycles_start = aiaos_perf_rdtsc();
   aiaos_kernel_memory_zero(aiaos_kernel_memory, aiaos_kernel_memory_size);
   memzero_cpu_cycles_end = aiaos_perf_rdtsc();
-  aiaos_kernel_vga_write_string("[mem] zero all memory finish ", 0, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string("[mem] zero all memory finish ", 0, 0, AIAOS_DRIVER_VGA_COLOR_GREEN);
 
   aiaos_kernel_types_ultoa(memzero_cpu_cycles_end - memzero_cpu_cycles_start, buf);
-  aiaos_kernel_vga_write_string("> Memz. Cycles:", 13, 0, AIAOS_KERNEL_VGA_COLOR_GREEN);
-  aiaos_kernel_vga_write_string(buf, 13, 16, AIAOS_KERNEL_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string("> Memz. Cycles:", 13, 0, AIAOS_DRIVER_VGA_COLOR_GREEN);
+  aiaos_driver_vga_write_string(buf, 13, 16, AIAOS_DRIVER_VGA_COLOR_GREEN);
 }
 
 /*

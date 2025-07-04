@@ -1,14 +1,14 @@
-#ifndef AIAOS_PCI_H
-#define AIAOS_PCI_H
+#ifndef AIAOS_DRIVER_PCI_H
+#define AIAOS_DRIVER_PCI_H
 
-#define PCI_CONFIG_ADDRESS 0xCF8
-#define PCI_CONFIG_DATA 0xCFC
-#define PCI_ENABLE_BIT 0x80000000UL
-#define PCI_MAX_BUS 255
-#define PCI_MAX_DEVICE 255
-#define PCI_MAX_FUNCTION 8
+#define AIAOS_DRIVER_PCI_CONFIG_ADDRESS 0xCF8
+#define AIAOS_DRIVER_PCI_CONFIG_DATA 0xCFC
+#define AIAOS_DRIVER_PCI_ENABLE_BIT 0x80000000UL
+#define AIAOS_DRIVER_PCI_MAX_BUS 255
+#define AIAOS_DRIVER_PCI_MAX_DEVICE 255
+#define AIAOS_DRIVER_PCI_MAX_FUNCTION 8
 
-typedef struct aiaos_pci_device
+typedef struct aiaos_driver_pci_device
 {
     unsigned char bus;
     unsigned char device;
@@ -20,34 +20,34 @@ typedef struct aiaos_pci_device
     unsigned char prog_if;
     unsigned char header_type;
 
-} aiaos_pci_device;
+} aiaos_driver_pci_device;
 
-static aiaos_pci_device aiaos_pci_devices[PCI_MAX_DEVICE];
-static unsigned int aiaos_pci_devices_count = 0;
+static aiaos_driver_pci_device aiaos_driver_pci_devices[AIAOS_DRIVER_PCI_MAX_DEVICE];
+static unsigned int aiaos_driver_pci_devices_count = 0;
 
-static void aiaos_pci_outl(unsigned short port, unsigned int val)
+static void aiaos_driver_pci_outl(unsigned short port, unsigned int val)
 {
     __asm __volatile("outl %0, %1" : : "a"(val), "Nd"(port));
 }
 
-static unsigned int aiaos_pci_inl(unsigned short port)
+static unsigned int aiaos_driver_pci_inl(unsigned short port)
 {
     unsigned int ret;
     __asm __volatile("inl %1, %0" : "=a"(ret) : "Nd"(port));
     return ret;
 }
 
-static unsigned long aiaos_pci_config_read32(unsigned char bus, unsigned char device,
-                                             unsigned char function, unsigned char offset)
+static unsigned long aiaos_driver_pci_config_read32(unsigned char bus, unsigned char device,
+                                                    unsigned char function, unsigned char offset)
 {
-    unsigned long address = PCI_ENABLE_BIT |
+    unsigned long address = AIAOS_DRIVER_PCI_ENABLE_BIT |
                             ((unsigned long)bus << 16) |
                             ((unsigned long)device << 11) |
                             ((unsigned long)function << 8) |
                             (offset & 0xFC);
 
-    aiaos_pci_outl(PCI_CONFIG_ADDRESS, (unsigned int)address);
-    return aiaos_pci_inl(PCI_CONFIG_DATA);
+    aiaos_driver_pci_outl(AIAOS_DRIVER_PCI_CONFIG_ADDRESS, (unsigned int)address);
+    return aiaos_driver_pci_inl(AIAOS_DRIVER_PCI_CONFIG_DATA);
 }
 
 static void aiaos_pci_init(void)
@@ -56,19 +56,19 @@ static void aiaos_pci_init(void)
     unsigned char device;
     unsigned char function;
 
-    for (bus = 0; bus < PCI_MAX_BUS; ++bus)
+    for (bus = 0; bus < AIAOS_DRIVER_PCI_MAX_BUS; ++bus)
     {
-        for (device = 0; device < PCI_MAX_DEVICE; ++device)
+        for (device = 0; device < AIAOS_DRIVER_PCI_MAX_DEVICE; ++device)
         {
-            for (function = 0; function < PCI_MAX_FUNCTION; ++function)
+            for (function = 0; function < AIAOS_DRIVER_PCI_MAX_FUNCTION; ++function)
             {
 
-                unsigned long data = aiaos_pci_config_read32(bus, device, function, 0x00);
+                unsigned long data = aiaos_driver_pci_config_read32(bus, device, function, 0x00);
                 unsigned long class_info;
                 unsigned short vendor_id = (unsigned short)(data & 0xFFFF);
                 unsigned short device_id;
                 unsigned char header_type;
-                aiaos_pci_device current_device;
+                aiaos_driver_pci_device current_device;
 
                 if (vendor_id == 0xFFFF)
                 {
@@ -76,8 +76,8 @@ static void aiaos_pci_init(void)
                 }
 
                 device_id = (unsigned short)((data >> 16) & 0xFFFF);
-                class_info = aiaos_pci_config_read32(bus, device, function, 0x08);
-                header_type = (unsigned char)((aiaos_pci_config_read32(bus, device, function, 0x0C) >> 16) & 0xFF);
+                class_info = aiaos_driver_pci_config_read32(bus, device, function, 0x08);
+                header_type = (unsigned char)((aiaos_driver_pci_config_read32(bus, device, function, 0x0C) >> 16) & 0xFF);
 
                 current_device.bus = bus;
                 current_device.device = device;
@@ -89,10 +89,10 @@ static void aiaos_pci_init(void)
                 current_device.prog_if = (unsigned char)((class_info >> 8) & 0xFF);
                 current_device.header_type = header_type;
 
-                aiaos_pci_devices[aiaos_pci_devices_count++] = current_device;
+                aiaos_driver_pci_devices[aiaos_driver_pci_devices_count++] = current_device;
             }
         }
     }
 }
 
-#endif /* AIAOS_PCI_H */
+#endif /* AIAOS_DRIVER_PCI_H */
