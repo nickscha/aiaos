@@ -116,4 +116,22 @@ static void aiaos_driver_pci_init(void)
     }
 }
 
+static int aiaos_driver_pci_find_device(aiaos_driver_pci_device *out_device, unsigned short vendor_id, unsigned short device_id)
+{
+    unsigned int i;
+
+    for (i = 0; i < aiaos_driver_pci_devices_count; ++i)
+    {
+        aiaos_driver_pci_device *dev = &aiaos_driver_pci_devices[i];
+
+        if (dev->vendor_id == vendor_id && dev->device_id == device_id)
+        {
+            *out_device = *dev;
+            return (1);
+        }
+    }
+
+    return (0);
+}
+
 #endif /* AIAOS_DRIVER_PCI_H */
