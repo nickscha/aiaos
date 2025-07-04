@@ -56,7 +56,7 @@ void _start_kernel(void)
   aiaos_driver_vga_clear_screen();
   vgaclear_cpu_cycles_end = aiaos_perf_rdtsc();
 
-  aiaos_pci_init();
+  aiaos_driver_pci_init();
 
   /* Logo and Header Text */
   aiaos_driver_vga_write_string("   _   _   _   _   _", aiaos_logo_row_offset++, aiaos_logo_col_offset, AIAOS_DRIVER_VGA_COLOR_GREEN);
