@@ -47,6 +47,7 @@ void _start_kernel(void)
   unsigned long memzero_cpu_cycles_end;
   unsigned long stack_total;
   unsigned long stack_usage;
+  aiaos_driver_pci_device e1000;
 
   meminit_cpu_cycles_start = aiaos_perf_rdtsc();
   aiaos_kernel_memory_initialize();
@@ -57,6 +58,11 @@ void _start_kernel(void)
   vgaclear_cpu_cycles_end = aiaos_perf_rdtsc();
 
   aiaos_driver_pci_init();
+
+  if (aiaos_driver_pci_device_find(&e1000, 0x8086, 0x100E))
+  {
+    aiaos_driver_vga_write_string(">    E1000 NIC: found", 19, 0, AIAOS_DRIVER_VGA_COLOR_GREEN);
+  }
 
   /* Logo and Header Text */
   aiaos_driver_vga_write_string("   _   _   _   _   _", aiaos_logo_row_offset++, aiaos_logo_col_offset, AIAOS_DRIVER_VGA_COLOR_GREEN);

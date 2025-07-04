@@ -116,7 +116,7 @@ static void aiaos_driver_pci_init(void)
     }
 }
 
-static int aiaos_driver_pci_find_device(aiaos_driver_pci_device *out_device, unsigned short vendor_id, unsigned short device_id)
+static int aiaos_driver_pci_device_find(aiaos_driver_pci_device *out_device, unsigned short vendor_id, unsigned short device_id)
 {
     unsigned int i;
 
