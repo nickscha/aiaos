@@ -9,9 +9,10 @@ LICENSE
 
 */
 #include "aiaos_kernel_types.h"
-#include "aiaos_kernel_memory.h"
-#include "drivers/aiaos_driver_vga.h"
-#include "drivers/aiaos_driver_pci.h"
+#include "aiaos_kernel_memory.h"        /* Memory/Malloc       */
+#include "drivers/aiaos_driver_vga.h"   /* VGA display output  */
+#include "drivers/aiaos_driver_pci.h"   /* PCI device scanning */
+#include "drivers/aiaos_driver_e1000.h" /* Network E1000 NIC   */
 
 typedef struct aiaos_perf_type_llu
 {
@@ -59,7 +60,7 @@ void _start_kernel(void)
 
   aiaos_driver_pci_init();
 
-  if (aiaos_driver_pci_device_find(&e1000, 0x8086, 0x100E))
+  if (aiaos_driver_pci_device_find(&e1000, AIAOS_DRIVER_E1000_VENDOR_ID, AIAOS_DRIVER_E1000_DEVICE_ID))
   {
     aiaos_driver_vga_write_string(">    E1000 NIC: found", 19, 0, AIAOS_DRIVER_VGA_COLOR_GREEN);
   }
